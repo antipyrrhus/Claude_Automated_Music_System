@@ -1,3 +1,5 @@
+This is a work in progress.
+
 To test the code with pre-created melodies, you can do the following:
 - Open melodies.txt, and copy into the clipboard one of the note sequences of your choosing.
 - Execute SettingGUI.java found in \src\main\. Be sure you have latest version of Java installed (uses JavaFX).
