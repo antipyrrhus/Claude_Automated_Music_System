@@ -15,7 +15,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -40,6 +42,7 @@ public class MeasurePane extends VBox {
 	private Pane pane;
 	private Rectangle[] rectArr;
 	private Rectangle[] columnRectArr;
+	private int mouseDragStartedIdx;
 //	private Rectangle focusedRectangle;
 
 	private PianoRollGUI pianoRollGUI;
@@ -69,7 +72,7 @@ public class MeasurePane extends VBox {
 		this.pianoRollGUI = pianoRollGUI;
 		this.prev = prev;
 		this.next = next;
-		
+		this.mouseDragStartedIdx = -1;
 		//Consider using w and e keys to traverse to prev or next measure
 //		super(); //Invoke parentclass GridPane's constructor first. (This is done implicitly, so comment out)
 
@@ -107,12 +110,18 @@ public class MeasurePane extends VBox {
 	    this.setAlignment(Pos.CENTER);
 	    this.getChildren().clear();
 	    this.lbl = new Label("Measure " + this.measureNum);
-	    lbl.setStyle("-fx-background-color : steelblue; -fx-text-fill: white");
-	    lbl.setOnMousePressed(e -> {
-	    	this.pianoRollGUI.focus(this);
+	    lbl.setPadding(new Insets(5,10,5,10));
+	    lbl.setStyle("-fx-background-color : darkgoldenrod ; -fx-text-fill: white; -fx-font-weight: bold");
+	    HBox hb = new HBox();
+	    hb.setAlignment(Pos.CENTER);
+	    hb.setStyle("-fx-background-color: darkgoldenrod");
+	    hb.setPadding(new Insets(2));
+	    hb.getChildren().add(lbl);
+	    
+	    this.getChildren().add(hb);
+	    hb.setOnMousePressed(e -> {
+	    	this.pianoRollGUI.focus(this, false);  //no autoscroll when selecting label by mouse, because it's a bit irritating
 	    });
-
-	    this.getChildren().add(lbl);
 	    
 	    this.pane = new Pane();
 	    
@@ -130,19 +139,49 @@ public class MeasurePane extends VBox {
 	    }
 	    
 	    this.getChildren().add(pane);
-	    this.pane.setStyle("-fx-background-color: white");
+	    this.pane.setStyle("-fx-background-color: lavender ");
 	    
+	    this.pane.setOnMouseDragged(e -> {
+	    	if (this.mouseDragStartedIdx < 0 || this.mouseDragStartedIdx >= this.rectArr.length) {
+	    		mouseDragStartedIdx = -1;
+	    		System.out.println("mouseDragStarted set to -1");
+	    		return;
+	    	}
+	    	System.out.println("Mouse moved");
+	    	int rect1DCoordinateIdx = get1DCoord(this.heightPerCell, this.widthPerCell, e.getX(), e.getY());
+	    	
+        	//Look up the index where the mouse drag was originally initiated,
+        	//and check whether the current index is in the same row as the original index.
+        	//If so, look at all the horizontal cells between the current index and the orig. drag index,
+        	//and fill in all of them up to the current index.
+        	if (this.mouseDragStartedIdx >= 0 && this.mouseDragStartedIdx < this.rectArr.length &&
+        			getRow(mouseDragStartedIdx) == getRow(rect1DCoordinateIdx)) {
+        		if (mouseDragStartedIdx < rect1DCoordinateIdx) {
+        			for (int i = mouseDragStartedIdx; i <= rect1DCoordinateIdx; ++i) createPitch(i);
+        		} else if (mouseDragStartedIdx > rect1DCoordinateIdx){
+        			for (int i = mouseDragStartedIdx; i >= rect1DCoordinateIdx; --i) createPitch(i);
+        		}
+        	} else {
+        		mouseDragStartedIdx = -1;
+        		System.out.println("mouseDragStarted set to -1");
+        	}
+	    });
 	    
+	    this.pane.setOnMouseReleased(e -> {
+	    	this.mouseDragStartedIdx = -1;
+	    	System.out.println("mouseDragStartedIdx set to -1.");
+	    });
 	    this.pane.setOnMousePressed(e -> {
 	    	//put a border around this measure
-	    	this.pianoRollGUI.focus(this);
-	    	
+	    	this.pianoRollGUI.focus(this, false, false);  //focus this measure, but don't autoscroll and don't set active column to 0.
 	    	int rect1DCoordinate = get1DCoord(this.heightPerCell, this.widthPerCell, e.getX(), e.getY());
 	    	int leftCornerCell = (int) (e.getX() / widthPerCell);
         	int upperCornerCell = (int) (e.getY() / heightPerCell);
         	
 	    	if (e.getButton() == MouseButton.SECONDARY) {
 	    		System.out.println("Right click!");
+	    		this.mouseDragStartedIdx = -1;
+				System.out.println("mouseDragStarted set to -1");
 //	    		int leftCornerCell = (int) (e.getX() / widthPerCell);
 	    		if (leftCornerCell < this.col) {
 	    			if (this.columnRectArr[leftCornerCell] == null) {
@@ -169,6 +208,8 @@ public class MeasurePane extends VBox {
 //	    		this.pane.getChildren().remove(rect);
 //	    		rect = null;
 //		    	this.rectArr[rect1DCoordinate] = null;
+				this.mouseDragStartedIdx = -1;
+				System.out.println("mouseDragStarted set to -1");
 		    	
 	    	} else {
 	    		//Coordinate of Rectangle with left upper corner at (leftCornerCell, upperCornerCell)
@@ -176,6 +217,8 @@ public class MeasurePane extends VBox {
 //	        	int upperCornerCell = (int) (e.getY() / heightPerCell);
 	        	System.out.printf("(x,y) = (%s, %s)\n", leftCornerCell, upperCornerCell);
 	        	if (leftCornerCell < this.col) {
+	        		this.mouseDragStartedIdx = get1DCoord(heightPerCell, widthPerCell, e.getX(), e.getY());
+	        		System.out.println("mouseDragStartedIdx: " + mouseDragStartedIdx);
 	        		this.createRect(leftCornerCell, widthPerCell, upperCornerCell, heightPerCell, this.pane, this.rectArr, rect1DCoordinate);
 //	        		this.clearColRect();  //delete any other column rectangles in this measure first
 //					this.createColRect(leftCornerCell, widthPerCell, ROWS, heightPerCell, this.columnRectArr, this.pane);
@@ -188,6 +231,20 @@ public class MeasurePane extends VBox {
 	    });
 	    
 	}	//end public MeasurePane
+
+	//Notate pitch given the array index.
+	private void createPitch(int rect1DCoordinateIdx) {
+		//convert the 1d index to 2-d rowindex and colindex, then create the rectangle.
+		this.createRect(getCol(rect1DCoordinateIdx), widthPerCell, getRow(rect1DCoordinateIdx), heightPerCell, pane, rectArr, rect1DCoordinateIdx);
+	}
+	
+	private int getRow(int rect1DCoordinateIdx) {
+		return rect1DCoordinateIdx / this.col;
+	}
+	
+	private int getCol(int rect1DCoordinateIdx) {
+		return rect1DCoordinateIdx % this.col;
+	}
 	
 	public void setPrev(MeasurePane prev) {
 		this.prev = prev;
@@ -298,27 +355,31 @@ public class MeasurePane extends VBox {
 	//Delete all notes in current active column and then move active column backward,
 	//moving over to previous measure if needed
 	public void backSpace() {
-		int activeCol = getActiveColumn();
-		if (activeCol == -1) return;
-		for (int i = activeCol; i < this.rectArr.length; i += this.col) {
-			this.deleteRect(i, rectArr, this.pane);
-		}
+		this.delete();
 		if (advanceActiveColumn(false) == false) {
 			if (this.prev != null) {
+				this.clear();
 				this.pianoRollGUI.goToNextOrPrevMeasure(false);
 				this.prev.setActiveColumn(this.prev.col - 1);
 			}
 		}
 	}
 	
-	private void setActiveColumn(int colIndex) {
+	public void delete() {
+		int activeCol = getActiveColumn();
+		if (activeCol == -1) return;
+		for (int i = activeCol; i < this.rectArr.length; i += this.col) {
+			this.deleteRect(i, rectArr, this.pane);
+		}
+	}
+	
+	public void setActiveColumn(int colIndex) {
 		this.createColRect(colIndex, this.widthPerCell, this.ROWS, this.heightPerCell, this.pane);
 	}
 	
 	public boolean advanceActiveColumn(boolean forward) {
 		int activeColumn = getActiveColumn() + (forward ? 1 : -1);
 		if (activeColumn >= this.col || activeColumn < 0) {
-			this.clear();
 			return false;
 		} else {
 			this.clearColRect();
@@ -349,7 +410,7 @@ public class MeasurePane extends VBox {
 	
 	private void notate(int pitch, int colIdx) {
 		int pitchRow = computeRow(pitch);
-		System.out.println(pitchRow);
+//		System.out.println(pitchRow);
 		int rectArrIndex = pitchRow * this.col + colIdx;
 		System.out.println("rectArrIndex: " + rectArrIndex);
 		this.createRect(colIdx, this.widthPerCell, pitchRow, this.heightPerCell, this.pane, this.rectArr, rectArrIndex);

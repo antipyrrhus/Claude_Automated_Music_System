@@ -11,17 +11,24 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import main.ChordSequence;
@@ -37,6 +44,7 @@ public class PianoRollGUI extends Application {
 	private TimeSignature ts;
 	private int totalMeasures;
 	private ScrollPane sp;
+	private BorderPane bp;
 	private ArrayList<MeasurePane> measurePaneAL;
 	private MeasurePane focusedMeasure;
 	private int midi_instrument;
@@ -47,6 +55,8 @@ public class PianoRollGUI extends Application {
 	private Scene scene;
 	private static MidiChannel[] mChannels;
 	private MidiFile midifile;
+	private Menu menuFile, menuEdit, menuPlayback;
+	private MenuBar menuBar;
 	
 	
 	
@@ -120,11 +130,126 @@ public class PianoRollGUI extends Application {
 	    this.sp = new ScrollPane(measuresHB);
 		sp.setHbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		sp.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+		this.focus(this.measurePaneAL.get(0));
 		
-		this.focusedMeasure = this.measurePaneAL.get(0);
-		this.focus(focusedMeasure);
+		//TODO File menu
+        menuBar = new MenuBar();
+        // --- Menu File
+        menuFile = new Menu("File");
+        MenuItem newFile = new MenuItem("New File...");
+        newFile.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.ALT_DOWN));
+        newFile.setOnAction(e -> {
+        	System.out.println("New File");
+        });
+        MenuItem load = new MenuItem("Load...");
+        MenuItem save = new MenuItem("Save Current");
+        save.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent t) {
+                System.out.println("Save");
+            }
+        });
+        MenuItem saveAs = new MenuItem("Save As...");
+        menuFile.getItems().addAll(newFile, load, save, saveAs);        
+        
+        // --- Menu Edit
+        menuEdit = new Menu("Edit");
+        MenuItem nextCol = new MenuItem("Next Column");
+        nextCol.setId(nextCol.getText());
+        nextCol.setAccelerator(new KeyCodeCombination(KeyCode.R));
+        nextCol.setOnAction(e -> {
+        	this.advanceCol(true);
+        });
+        MenuItem prevCol = new MenuItem("Prev Column");
+        prevCol.setId(prevCol.getText());
+        prevCol.setAccelerator(new KeyCodeCombination(KeyCode.Q));
+        prevCol.setOnAction(e -> {
+        	this.advanceCol(false);
+        });
+        MenuItem nextMeasure = new MenuItem("Next Measure");
+        nextMeasure.setId(nextMeasure.getText());
+        nextMeasure.setAccelerator(new KeyCodeCombination(KeyCode.E));
+        nextMeasure.setOnAction(e -> {
+        	goToNextOrPrevMeasure(true);
+        });
+        MenuItem prevMeasure = new MenuItem("Prev Measure");
+        prevMeasure.setId(prevMeasure.getText());
+        prevMeasure.setAccelerator(new KeyCodeCombination(KeyCode.W));
+        prevMeasure.setOnAction(e -> {
+        	goToNextOrPrevMeasure(false);
+        });
+        MenuItem backSpace = new MenuItem("Backspace");
+        backSpace.setId(backSpace.getText());
+        backSpace.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SPACE));
+        backSpace.setOnAction(e -> {
+        	if (focusedMeasure != null) focusedMeasure.backSpace();
+        });
+        MenuItem deleteNotesInColumn = new MenuItem("Delete");
+        deleteNotesInColumn.setId(deleteNotesInColumn.getText());
+        deleteNotesInColumn.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
+        deleteNotesInColumn.setOnAction(e -> {
+        	if (focusedMeasure != null) focusedMeasure.delete();
+        });
+        MenuItem deleteAllNotesInMeasure = new MenuItem("Delete All Notes in Current Measure");
+        deleteAllNotesInMeasure.setId(deleteAllNotesInMeasure.getText());
+        deleteAllNotesInMeasure.setAccelerator(new KeyCodeCombination(KeyCode.DELETE, KeyCombination.ALT_DOWN));
+        deleteAllNotesInMeasure.setOnAction(e -> {
+        	this.confirmDelAllNotesInMeasure();
+        });
+        MenuItem insertMeasure = new MenuItem("Insert/Add Measures...");
+        MenuItem delCurrMeasure = new MenuItem("Delete Current Measure");
+        MenuItem delMeasures = new MenuItem("Delete Measures...");
+        MenuItem changeTempo = new MenuItem("Change Tempo...");
+        MenuItem increaseTempo = new MenuItem("Increase Tempo");
+        increaseTempo.setAccelerator(new KeyCodeCombination(KeyCode.ADD));
+        increaseTempo.setOnAction(e -> {
+        	this.changeTempo(Math.max(1, tempo - 1));
+        });
+        MenuItem decreaseTempo = new MenuItem("Decrease Tempo");
+        decreaseTempo.setAccelerator(new KeyCodeCombination(KeyCode.SUBTRACT));
+        decreaseTempo.setOnAction(e -> {
+			this.changeTempo(Math.min(48, tempo + 1));
+        });
+        MenuItem changeCells = new MenuItem("Change Cells per Measure...");
+        menuEdit.getItems().addAll(nextCol, prevCol, nextMeasure, prevMeasure, 
+        		backSpace, deleteNotesInColumn, deleteAllNotesInMeasure, 
+        		insertMeasure, delCurrMeasure, delMeasures, 
+        		changeTempo, increaseTempo, decreaseTempo, changeCells);
+        
+        // --- Menu Playback
+        menuPlayback = new Menu("Playback");
+        MenuItem playFromBeginning = new MenuItem("Play from Beginning");
+        playFromBeginning.setId("PlayFromBeginning");
+        playFromBeginning.setAccelerator(new KeyCodeCombination(KeyCode.P, KeyCombination.ALT_DOWN));
+        playFromBeginning.setOnAction(e -> {
+        	this.focus(this.measurePaneAL.get(0));
+        	PianoRollGUI.this.playBack(focusedMeasure);
+        });
+        MenuItem playFromCurrent = new MenuItem("Play from Current");
+        playFromCurrent.setId("PlayFromCurrent");
+        playFromCurrent.setAccelerator(new KeyCodeCombination(KeyCode.P));
+        playFromCurrent.setOnAction(e -> {
+        	PianoRollGUI.this.playBack(focusedMeasure);
+        });
+        MenuItem stop = new MenuItem("Stop");
+        stop.setId("Stop");
+        stop.setAccelerator(new KeyCodeCombination(KeyCode.ESCAPE));
+        stop.setOnAction(e -> {
+        	cancelTask = true;
+        });
+        stop.setDisable(true);
+        menuPlayback.getItems().addAll(playFromBeginning, playFromCurrent, stop);
+        
+        menuBar.getMenus().addAll(menuFile, menuEdit, menuPlayback);
+		 
 		
-		this.scene = new Scene(sp);
+		
+		this.bp = new BorderPane();
+		bp.setTop(menuBar);
+		bp.setCenter(sp);
+//		BorderPane.setAlignment(node, Pos.TOP_CENTER);		//static method to set alignment for node
+		
+		this.scene = new Scene(bp);
 	    primaryStage.setScene(scene);
 		primaryStage.setTitle("Piano Roll");
 		primaryStage.setWidth(600);
@@ -154,8 +279,7 @@ public class PianoRollGUI extends Application {
 		}
 	}
 	
-	
-	public void focus(MeasurePane measurePane) {
+	public void focus(MeasurePane measurePane, boolean autoscroll, boolean setActiveColToZero) {
 		if (measurePane != null) measurePane.setFocus();
 		if (this.focusedMeasure != null) {
 			if (focusedMeasure.equals(measurePane)) {}
@@ -165,13 +289,23 @@ public class PianoRollGUI extends Application {
 			}
 		}
 		focusedMeasure = measurePane;
-		autoScrollPane(this.sp);
+		if (autoscroll) autoScrollPane(this.sp);
+		if (focusedMeasure != null) focusedMeasure.setActiveColumn(setActiveColToZero ? 0 : focusedMeasure.getCol() - 1);
+	}
+	
+	public void focus(MeasurePane measurePane, boolean autoscroll) {
+		focus(measurePane, autoscroll, true);
+	}
+	
+	public void focus(MeasurePane measurePane) {
+		focus(measurePane, true);
 	}
 	
 	//Playback from given measure to the end unless stopped (with ESC key)
 	private void playBack(MeasurePane measurePane) {
 		if (measurePane == null) {
-			cancelTask = false;this.disableDuringPlayback(false);
+			cancelTask = false;
+			this.disableDuringPlayback(false);
 			return;
 		}
 		
@@ -200,7 +334,8 @@ public class PianoRollGUI extends Application {
 			public void handle(WorkerStateEvent arg0) {
 				if (cancelTask == false) {
 					playBack(measurePane.getNext());
-				} else {
+				} else {  //cancelTask = true.
+					//we're done. re-initialize to false.
 					cancelTask = false;
 				}
 			}
@@ -211,25 +346,20 @@ public class PianoRollGUI extends Application {
 		new Thread(task).start();
 	}
 
+	private void disableMenuItemsDuringPlayback(boolean playBackInProgress) {
+		for (Menu menu : menuBar.getMenus()) {
+			for (MenuItem menuitem : menu.getItems()) {
+				menuitem.setDisable(playBackInProgress);
+				if (menuitem.getText().equalsIgnoreCase("Stop")) {
+					menuitem.setDisable(!playBackInProgress);
+				}
+			}
+		}
+	}
 	
 	private void disableDuringPlayback(boolean disable) {
 		this.sp.setDisable(disable);
-		if (disable == true) {
-			System.out.println("removing event handler");
-			scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-
-				@Override
-				public void handle(KeyEvent event) {
-					if (event.getCode() == KeyCode.ESCAPE) {
-						cancelTask = true;
-					}
-				}
-				
-			});
-		} else {
-			System.out.println("Restoring event handler...");
-			scene.setOnKeyPressed(this.keyPressHandler);
-		}
+		disableMenuItemsDuringPlayback(disable);
 	}
 
 	
@@ -259,36 +389,36 @@ public class PianoRollGUI extends Application {
 				if (PITCH_MAP.get("Z") + Harmonizer.SCALE * octave < PianoRollGUI.MIN_PITCH) {
 					octave += 1;
 				}
-			} else if (k.getCode() == KeyCode.BACK_SPACE) {
-				if (focusedMeasure != null) focusedMeasure.backSpace();
-			} else if (k.getCode() == KeyCode.DELETE && focusedMeasure != null) {
-				//Delete all notes in measure after confirming
-				confirmDelAllNotesInMeasure();
-			} else if (k.getCode() == KeyCode.W) {
-				//go to prev measure
-				goToNextOrPrevMeasure(false);
-			} else if (k.getCode() == KeyCode.E) {
-				//go to next measure
-				goToNextOrPrevMeasure(true);
-			} else if (k.getCode() == KeyCode.R) {
-				//Rest note (skip to the next active column)
-				insertRest();
-			} else if (k.getCode() == KeyCode.P) {
-				PianoRollGUI.this.playBack(focusedMeasure);
-				
+//			} else if (k.getCode() == KeyCode.BACK_SPACE) {
+//				if (focusedMeasure != null) focusedMeasure.backSpace();
+//			} else if (k.getCode() == KeyCode.DELETE && focusedMeasure != null) {
+//				//Delete all notes in measure after confirming
+//				confirmDelAllNotesInMeasure();
+//			} else if (k.getCode() == KeyCode.W) {
+//				//go to prev measure
+//				goToNextOrPrevMeasure(false);
+//			} else if (k.getCode() == KeyCode.E) {
+//				//go to next measure
+//				goToNextOrPrevMeasure(true);
+//			} else if (k.getCode() == KeyCode.R) {
+//				//Rest note (skip to the next active column)
+//				insertRest();
+//			} else if (k.getCode() == KeyCode.P) {
+//				PianoRollGUI.this.playBack(focusedMeasure);
+//				
 			} else if (k.getCode() == KeyCode.DIGIT1) {
 				PianoRollGUI.this.chordBuilderMode = false;
 			} else if (k.getCode() == KeyCode.DIGIT2) {
 				PianoRollGUI.this.chordBuilderMode = true;
 			}
-			//TODO have a separate GUI for tempo changes later. For now just testing
-			else if (k.getCode() == KeyCode.ADD) {
-				PianoRollGUI.this.changeTempo(Math.max(1, tempo - 1));
-				System.out.println("Tempo changed to " + tempo);
-			} else if (k.getCode() == KeyCode.SUBTRACT) {
-				PianoRollGUI.this.changeTempo(Math.min(48, tempo + 1));
-				System.out.println("Tempo changed to " + tempo);
-			}
+			//Have a separate GUI for tempo changes later. For now just testing
+//			else if (k.getCode() == KeyCode.ADD) {
+//				PianoRollGUI.this.changeTempo(Math.max(1, tempo - 1));
+//				System.out.println("Tempo changed to " + tempo);
+//			} else if (k.getCode() == KeyCode.SUBTRACT) {
+//				PianoRollGUI.this.changeTempo(Math.min(48, tempo + 1));
+//				System.out.println("Tempo changed to " + tempo);
+//			}
 			
 			else if (PITCH_MAP.get(k.getCode().toString()) != null) {
 				Integer pitch = PITCH_MAP.get(k.getCode().toString()) + Harmonizer.SCALE * octave;
@@ -302,11 +432,12 @@ public class PianoRollGUI extends Application {
 					} else if (chordBuilderMode) {  //just notate/play pitch, don't move the column bar forward
 						focusedMeasure.play(pitch);
 					} else {  //move column bar forward then notate/play pitch
+						focusedMeasure.play(pitch);
 						if (focusedMeasure.advanceActiveColumn(true) == false) {
-							focusedMeasure = nextMeasure(focusedMeasure);
-							PianoRollGUI.this.focus(focusedMeasure);
-						}
-						if (focusedMeasure != null)	focusedMeasure.play(pitch);
+							if (nextMeasure(focusedMeasure) != null) {
+								PianoRollGUI.this.focus(nextMeasure(focusedMeasure));
+							}
+						}	
 					}
 				}
 				
@@ -314,12 +445,13 @@ public class PianoRollGUI extends Application {
 		} //end public void handle
 	} //end private class KeyPressHandler
 	
-	private void insertRest() {
+	private void advanceCol(boolean forward) {
 		if (focusedMeasure == null) return;
-		if (focusedMeasure.advanceActiveColumn(true) == false) {
-			focusedMeasure = nextMeasure(focusedMeasure);
-			PianoRollGUI.this.focus(focusedMeasure);
-			insertRest();
+		if (focusedMeasure.advanceActiveColumn(forward) == false) {
+//			if (nextMeasure(focusedMeasure) != null) {
+//				PianoRollGUI.this.focus(nextMeasure(focusedMeasure));
+//			}
+			this.goToNextOrPrevMeasure(forward, forward);
 		}
 	}
 	
@@ -332,17 +464,31 @@ public class PianoRollGUI extends Application {
 //		
 //	}
 	
-	//TODO implement chord editor - have the red column rectangle stay in place while you play more keys
-	//TODO implement warning message when a chord is invalid (i.e. more than 4 (later 5) notes per column)
-	//TODO implement mouse-drag for the same note holding for multiple durations, and implement playback support for same.
-	//TODO implement GUI for changing playback instrument, changing tempo, delete all notes in measure button,
-	//buttons for playback / stop
+	//TODO (DONE) modify the column rectangle and how it moves on keytyped -- notate in place THEN move forward, and
+	//     also have the rectangle default to the first cell whenever a new measure is focused, as well as
+	//     when first initialized, have it appear in the first cell of the first measure
+	//TODO (DONE) implement chord editor - have the red column rectangle stay in place while you play more keys
+	//TODO (DONE) implement mouse-drag for the same note holding for multiple durations
+	//TODO (DONE) minor visual changes
+	
+	//TODO implement GUI for displaying/changing playback instrument, changing tempo, no of cells per measure, playback/stop button
+	//TODO File menu for various tasks, set keyboard shortcuts as accelerator and remove redundant code from KeyPressHandler
+	
+	/* TODO implement real-time playback support for individual notes held over duration (Update: the playback algorithm 
+	 * as currently implemented make this difficult unless the entire chord is held for the same duration. 
+	 * Will need to implement arpeggios and the like as a separate task. */
+	
+	
+	//TODO implement warning message when a chord is invalid (i.e. more than 4 (later 5) notes per column, a chord has notes of diff duration, etc)
+	
+	//TODO improve scrollpane auto-scrolling?
 	
 	
 	/**
 	 * Confirmation dialog before deleting all notes in a measure
 	 */
 	private void confirmDelAllNotesInMeasure() {
+		if (focusedMeasure == null) return;
 		//Alert is a new built-in class for JavaFX
 		Alert alert = new Alert(AlertType.CONFIRMATION, "Delete all notes in the selected measure?", ButtonType.YES, ButtonType.NO);
 		alert.showAndWait();
@@ -360,18 +506,20 @@ public class PianoRollGUI extends Application {
 		mChannels[0].noteOff(pitch);//turn off the note
 	}
 	
-	public void goToNextOrPrevMeasure(boolean nextMeasure) {
+	public void goToNextOrPrevMeasure(boolean nextMeasure, boolean setColIndexToZero) {
 		if (nextMeasure) {
 			MeasurePane next = nextMeasure(focusedMeasure);
-			if (next == null) next = measurePaneAL.get(0);
-			focus(next);
-			autoScrollPane(sp);
+			if (next != null) focus(next, true, setColIndexToZero);
+//			autoScrollPane(sp);
 		} else {
 			MeasurePane prev = prevMeasure(this.focusedMeasure);
-			if (prev == null) prev = measurePaneAL.get(measurePaneAL.size() - 1);
-			focus(prev);
-			autoScrollPane(sp);
+			if (prev != null) focus(prev, true, setColIndexToZero);
+//			autoScrollPane(sp);
 		} 
+	}
+	
+	public void goToNextOrPrevMeasure(boolean nextMeasure) {
+		goToNextOrPrevMeasure(nextMeasure, true);
 	}
 	
 	private void changeInstrument(int instrument) {
