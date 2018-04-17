@@ -15,12 +15,12 @@ public class MyClassLoader extends ClassLoader{
     }
 
     public Class loadClass(String name) throws ClassNotFoundException {
-        if(!"reflection.Sandbox".equals(name))
+        if(!"reflection.CustomFunctions".equals(name))
                 return super.loadClass(name);
 
         try {
-        	//TODO change
-            String url = "file:C:/data/projects/tutorials/web/WEB-INF/classes/reflection/MyObject.class";
+        	//TODO change folder
+            String url = "file:C:/data/projects/classes/reflection/CustomFunctions.class";
             URL myUrl = new URL(url);
             URLConnection connection = myUrl.openConnection();
             InputStream input = connection.getInputStream();
@@ -36,7 +36,7 @@ public class MyClassLoader extends ClassLoader{
 
             byte[] classData = buffer.toByteArray();
 
-            return defineClass("reflection.MyObject",
+            return defineClass("reflection.CustomFunctions",
                     classData, 0, classData.length);
 
         } catch (MalformedURLException e) {
@@ -57,13 +57,13 @@ public class MyClassLoader extends ClassLoader{
 
     	ClassLoader parentClassLoader = MyClassLoader.class.getClassLoader();
     	MyClassLoader classLoader = new MyClassLoader(parentClassLoader);
-    	Class myObjectClass = classLoader.loadClass("reflection.Sandbox");
+    	Class myObjectClass = classLoader.loadClass("reflection.CustomFunctions");
     	
     	CustomFunctions sb = (CustomFunctions)myObjectClass.newInstance();
 
     	//create new class loader so classes can be reloaded.
     	classLoader = new MyClassLoader(parentClassLoader);
-    	myObjectClass = classLoader.loadClass("reflection.Sandbox");
+    	myObjectClass = classLoader.loadClass("reflection.CustomFunctions");
 
     	sb = (CustomFunctions) myObjectClass.newInstance();
 
