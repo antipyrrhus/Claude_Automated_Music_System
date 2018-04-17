@@ -690,6 +690,49 @@ public class ScorePane extends VBox {
 		return ret;
 	}
 	
+	public boolean setDuration(int duration, int col, int row) {
+		if (duration < 0) throw new RuntimeException("Duration cannot be negative");
+		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
+		if (rn == null) return false;
+		if (duration == 0) {
+			this.deleteRect(this.convertTo1DCoord(row, col), rectArr, pane);
+			return true;
+		}
+		
+		int startCol = rn.colIdx;
+		
+		if (duration > this.col - startCol) 
+			throw new RuntimeException("Duration exceeds allowed range (the note's duration would exceed the total no. of columns)");
+		
+		//If the duration to be assigned already equals the note's current length, do nothing and return true.
+		if (duration == rn.length) return true;
+		
+		//If extending duration beyond the note's current length,
+		//check to see whether there are any other notes that are in the way. If so, return false
+		if (duration > rn.length) {
+			for (int i = col + rn.length; i < col + duration; ++i) {
+				if (this.rectArr[this.convertTo1DCoord(row, i)] != null) return false;
+			}
+			
+			for (int i = col + rn.length; i < col + duration; ++i) {
+				this.rectArr[this.convertTo1DCoord(row, i)] = rn;
+			}
+			rn.length = duration;
+			rn.setWidth(duration * this.widthPerCell);
+			return true;
+		} else {  //duration < rn.length
+			this.curtailNoteLength(rn, rn.length - duration);
+			return true;
+		}
+		
+	}
+	
+	public int getStartCol(int col, int row) {
+		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
+		if (rn==null) return -1; //-1 indicates there is no note here
+		return rn.colIdx;
+	}
+	
 	public int getColor(int col, int row) {
 		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
 		if (rn==null) return -1; //-1 indicates there is no note here
@@ -699,6 +742,11 @@ public class ScorePane extends VBox {
 	}
 	
 	public boolean setColor(int col, int row, int colorInt) {
+		if (colorInt == -1) { //this means delete the note
+			this.deleteRect(this.convertTo1DCoord(row, col), rectArr, pane);
+			return true;
+		}
+		
 		int rectIndex = this.convertTo1DCoord(row, col);
 		RectangleNote rn = this.rectArr[rectIndex];
 		if (rn == null) {
@@ -711,12 +759,12 @@ public class ScorePane extends VBox {
 		return false;
 	}
 	
-	public boolean isStartOfNote(int col, int row) {
-		int rectIndex = this.convertTo1DCoord(row, col);
-		RectangleNote rn = this.rectArr[rectIndex];
-		if (rn == null || rn.colIdx != col) return false;
-		return true;
-	}
+//	public boolean isStartOfNote(int col, int row) {
+//		int rectIndex = this.convertTo1DCoord(row, col);
+//		RectangleNote rn = this.rectArr[rectIndex];
+//		if (rn == null || rn.colIdx != col) return false;
+//		return true;
+//	}
 	
 	public void muteSelectedNotes(boolean mute) {
 		muteSelectedNotes(this.getAllSelectedNotes(), mute);
