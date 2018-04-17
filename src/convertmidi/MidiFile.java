@@ -7,11 +7,13 @@ package convertmidi;
  */
 
 import java.io.*;
+import java.io.FileReader;
 import java.util.*;
 
 import javax.sound.midi.*;
 
 import main.*;
+import pianoroll.WrapperNote;
 
 public class MidiFile
 {
@@ -29,7 +31,7 @@ public class MidiFile
 //	public static final int SEMIBREVE = 64;  //whole note
 //	public static final int MAX_VOL = 127;
 	
-	//TODO try the following durations instead and see what happens
+	//Trying the following durations instead and see what happens
 	public static final int TRIPLET_16th = 2;
 	public static final int SEMIQUAVER = 3;  //16th note
 	public static final int TRIPLET_8TH = 4;
@@ -38,7 +40,11 @@ public class MidiFile
 	public static final int CROTCHET = 12;   //quarter note
 	public static final int MINIM = 24;      //half note
 	public static final int SEMIBREVE = 48;  //whole note
+	public static final int MIN_DURATION = 1;
+	public static final int MAX_DURATION = SEMIBREVE;
 	public static final int MAX_VOL = 127;
+	
+	public static final int MULT = 64; //multipler for real-time playback
 	
 //	private int instrument;
 
@@ -266,13 +272,16 @@ public class MidiFile
 	public void play(ChordSequence cs, int instrument, int tempo) {
 		this.progChange(instrument);
 		for (Chord c : cs.getSeq()) {
-			if (c == null) {
-				try {
-					Thread.sleep(64 * tempo); // wait time in milliseconds to control duration. The constant is arbitrary.
-				} catch (InterruptedException ie) {
-					ie.printStackTrace();
-				}
-			} else play(c);
+//			if (c == null) {
+//				try {
+//					Thread.sleep(64 * tempo); // wait time in milliseconds to control duration. The constant is arbitrary.
+//				} catch (InterruptedException ie) {
+//					ie.printStackTrace();
+//				}
+//			} 
+//			else {
+				play(c, tempo);
+//			}
 		}
 	}
 
@@ -282,8 +291,15 @@ public class MidiFile
 	 * and only looks at the first Note's volume / duration and applies it to the entire chord.
 	 * @param c Chord consisting of Note objects.
 	 */
-	public void play(Chord c) {
-		if (c == null) return;
+	public void play(Chord c, int tempo) {
+		if (c == null) {
+			try {
+				Thread.sleep(64 * tempo); // wait time in milliseconds to control duration. The constant is arbitrary.
+			} catch (InterruptedException ie) {
+				ie.printStackTrace();
+			}
+			return;
+		}
 		Note[] notes = c.getNotes();
 		int vol = notes[0].getVolume();
 		int duration = notes[0].getDuration();
@@ -344,6 +360,88 @@ public class MidiFile
 		}
 	}
 
+	/**
+	 * Reads from a save file (.dat), and outputs the data in the form of a MIDI (.mid) file.
+	 * @param file
+	 */
+	public boolean saveToMidi(File fileToReadFrom, String midiPathAndFileName) {
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(fileToReadFrom));
+			Integer.parseInt(br.readLine());  //gcd
+			int tempo = Integer.parseInt(br.readLine());
+			Integer.parseInt(br.readLine());  //num. of Cols
+			br.readLine().split(" ");  //For key signature
+			int midi_instrument = Integer.parseInt(br.readLine());
+			Integer.parseInt(br.readLine()); //boolean chordBuilderMode
+			
+			this.progChange(midi_instrument);
+			
+			ArrayList<WrapperNote> wnAL = new ArrayList<>();
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] arr = line.split(" ");
+				WrapperNote wnOn = new WrapperNote(Integer.parseInt(arr[0]));
+				wnOn.setDuration(Integer.parseInt(arr[1]));
+				wnOn.setIdx(Integer.parseInt(arr[2]));
+				wnAL.add(wnOn);
+				
+				//Also we'll add a dummy wrappernote indicating when the above note should be set to OFF.
+				WrapperNote wnOff = new WrapperNote(wnOn.getPitch());
+				wnOff.setNoteOff(true);
+//				wnOff.setDuration(wnOn.getDuration());
+				wnOff.setIdx(wnOn.getColIdx() + wnOn.getDuration());
+				wnAL.add(wnOff);
+			}
+			br.close();
+			
+			//Start by sorting the wrappernotes in the order of their column indices
+			//(or, if their column indices are the same, in the order of their duration)
+			//(or, if both the above are the same, the OFF notes should come before the ON notes)
+			Collections.sort(wnAL, new Comparator<WrapperNote>() {
+				@Override
+				public int compare(WrapperNote n1, WrapperNote n2) {
+					if (n1.getColIdx() == n2.getColIdx()) {
+						if (n1.getDuration() == n2.getDuration()) {
+							return n1.isNoteOff() == n2.isNoteOff() ? 0 : n1.isNoteOff() ? -1 : 1;
+						} else {
+							return n1.getDuration() - n2.getDuration();
+						}
+					} else {
+						return n1.getColIdx() - n2.getColIdx();
+					}
+				} //end public int compare
+			}); //end Collections.sort
+			
+			
+			//Now go thru each note and compute note on, note off in order
+			int i = 0;
+			while (i < wnAL.size()) {
+				WrapperNote currNote = wnAL.get(i);
+				WrapperNote prevNote = null;
+				if (i > 0) prevNote = wnAL.get(i-1);
+//				WrapperNote nextNote = null;
+//				if (i + 1 < wnAL.size()) nextNote = wnAL.get(i+1);
+				
+				if (i == 0) {  //In this case the first WrapperNote should be an ON note. Notate it.
+					this.noteOn(currNote.getColIdx(), currNote.getPitch(), currNote.getVolume());
+				} else {
+					if (currNote.isNoteOff()) { //OFF note
+						this.noteOff(tempo * (currNote.getColIdx() - prevNote.getColIdx()), currNote.getPitch());
+					} else {
+						this.noteOn(tempo * (currNote.getColIdx() - prevNote.getColIdx()), currNote.getPitch(), currNote.getVolume());
+					}
+				} //end if (i == 0) / else
+				i++;
+				
+			} //end while
+			this.writeToFile(midiPathAndFileName);
+			return true;
+		} catch (NumberFormatException | IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	/** Test method — creates a file test1.mid when the class
       is executed */
 	public static void main (String[] args)

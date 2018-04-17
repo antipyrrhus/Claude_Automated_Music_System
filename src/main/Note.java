@@ -6,7 +6,7 @@ import convertmidi.MidiFile;
 	 * Note class.
 	 * @author Yury Park
 	 */
-	public class Note {
+	public class Note implements Comparable<Note> {
 		private String name;  //e.g. "C#", "F ", "E ", "D#", etc.
 		private int pitch;    //pitch value
 		private int octave;   //how high of a pitch is this?
@@ -213,6 +213,13 @@ import convertmidi.MidiFile;
 		@Override
 		public String toString() {
 			return String.format("%s%s(%s)-%s", this.name, this.octave, this.pitch, this.duration);
+		}
+
+		@Override
+		public int compareTo(Note n) {
+			if (this.pitch == n.pitch) {
+				return this.duration - n.duration;
+			} else return this.pitch - n.pitch;
 		}
 	}
 	//end class Note

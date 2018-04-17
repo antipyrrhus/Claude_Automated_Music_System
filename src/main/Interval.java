@@ -35,7 +35,15 @@ public class Interval {
 	public Interval (Chord c) {
 //		System.out.println("Chord: " + c);
 		//Start by reducing the chord range to an octave
-		Note[] notes = c.getNotes();
+		this.processNotes(c.getNotes());
+		
+	}
+	
+	public void processNotes(Note[] notes) {
+		if (notes == null || notes.length == 0) {
+			this.arr = new int[] {};
+			return;
+		}
 		int lowestPitch = notes[0].getPitch() % Harmonizer.SCALE;
 		
 		HashSet<Integer> pitchesHS = new HashSet<>(); //using HashSet to eliminate duplicate pitches
@@ -69,6 +77,19 @@ public class Interval {
 		for (int i = 1; i < pitchesAL.size(); ++i) {
 			this.arr[i-1] = pitchesAL.get(i) - tmpInterval;
 		}
+		System.out.println("Interval: " + Arrays.toString(this.arr));
+	}
+	
+	/**
+	 * Overloaded constructor
+	 * @param c Chord_NoLimit
+	 */
+	public Interval(Chord_NoLimit c) {
+		Note[] notes = new Note[c.getNumNotes()];
+		for (int i = 0; i < notes.length; ++i) {
+			notes[i] = c.getNote(i);
+		}
+		this.processNotes(notes);
 	}
 	
 	/**

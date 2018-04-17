@@ -80,11 +80,11 @@ colorManager.OffHarmonicColor.11.L tDouble 0.4
 colorManager.OnHarmonicColor.11.H tDouble 0.583333
 colorManager.OnHarmonicColor.11.S tDouble 0.5
 colorManager.OnHarmonicColor.11.L tDouble 0.7
-mainWindow.top tInt 29
-mainWindow.left tInt 253
-mainWindow.bottom tInt 789
-mainWindow.right tInt 1339
-diagnosticWindow.top tInt -7310
+mainWindow.top tInt 0
+mainWindow.left tInt 239
+mainWindow.bottom tInt 760
+mainWindow.right tInt 1325
+diagnosticWindow.top tInt -8110
 diagnosticWindow.left tInt 130
-diagnosticWindow.bottom tInt -6717
+diagnosticWindow.bottom tInt -7517
 diagnosticWindow.right tInt 1282
