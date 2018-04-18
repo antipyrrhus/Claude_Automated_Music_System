@@ -133,6 +133,30 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 		}
 	}
 	
+	public int getColIdx() {
+		return colIdx;
+	}
+
+	public int getRowIdx() {
+		return rowIdx;
+	}
+
+	public int getLength() {
+		return length;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public boolean isMelody() {
+		return isMelody;
+	}
+
+	public boolean isSelected() {
+		return isSelected;
+	}
+
 	public void setOrigColor(int c) {
 		this.origColor = ColorIntMap.intToColorArr[c];
 	}

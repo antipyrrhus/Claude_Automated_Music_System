@@ -1392,6 +1392,8 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) getAllNotesInColumn() should be renamed to getAllPitchesInColumn, and a separate method by the former name
 	//     should be created that returns an arraylist of note objects
 	
+	//TODO edit CustomFunctions class to gather other information about the note such as mute? melody? etc.
+	
 	
 	//TODO whenever they're 4 notes played together, color code them depending on what type of chord it is (minor, major, etc.)
 	//TODO for above, also depending on key signature, based on rhythm, tonality
@@ -1470,6 +1472,11 @@ public class PianoRollGUI extends Application {
 	public String getInstrument() {
 		return this.instrumentArr[this.midi_instrument].toString();
 	}
+	
+	public int getInstrumentInt() {
+		return this.midi_instrument;
+	}
+	
 	public Instrument[] getInstrumentArr() {
 		return this.instrumentArr;
 	}

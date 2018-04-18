@@ -9,14 +9,42 @@ import pianoroll.*;
  */
 public class CustomFunctions {
 	private ScorePane scorePane;  //class for displaying / modifying notes.
+	private int instrument;
 	private static final Color[] intToColorArr = ColorIntMap.intToColorArr;
+	
 	
 	/**
 	 * Constructor
 	 * @param scorePane
+	 * @param instrument
 	 */
-	public CustomFunctions(ScorePane scorePane) {
+	public CustomFunctions(ScorePane scorePane, int instrument) {
 		this.scorePane = scorePane;
+		this.instrument = instrument;
+	}
+	
+	/**
+	 * Changes the instrument on the score pane.
+	 * @param instrument
+	 */
+	public void changeInstrument(int instrument) {
+		//Instrument change will fail if the instrument integer parameter is out of range
+		if (this.scorePane.changeInstrument(instrument) == true) {
+			this.instrument = instrument;
+		}
+	}
+	
+	/**
+	 * Reads and returns a String representation of the current instrument, plus features of the
+	 * note located at (col, row). If the note is null, its feature is represented simply as "-".
+	 * See NoteFeatures class for more details.
+	 * @param col
+	 * @param row
+	 * @return String representation of note's features
+	 */
+	public String readNoteFeatures(int col, int row) {
+		this.checkValidColRow(col, row);
+		return this.instrument + "," + new NoteFeatures(scorePane.getNote(col, row)).toString();
 	}
 	
 	/**
@@ -27,7 +55,7 @@ public class CustomFunctions {
 	 * "-10" : indicates a null note
 	 * "01"  : indicates a sustained note with color value 0
 	 * "101" : indicates a sustained note with color value 10
-	 * "100"  : indicates a non-sustained note with color value 10  
+	 * "100" : indicates a non-sustained note with color value 10  
 	 * 
 	 * @param col
 	 * @param row

@@ -688,11 +688,31 @@ public class ScorePane extends VBox {
 		for (int i = 0; i < ROWS; ++i)
 			System.out.println(Arrays.toString(ret[i]));
 		return ret;
+		
+	}
+	
+	public RectangleNote getNote(int col, int row) {
+		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
+		return rn;
+	}
+	
+	public boolean isValidInstrument(int instr) {
+		if (instr < 0 || instr >= this.pianoRollGUI.getInstrumentArr().length) return false;
+		return true;
+	}
+	
+	public boolean changeInstrument(int instr) {
+		if (this.isValidInstrument(instr)) {
+			this.pianoRollGUI.changeInstrument(instr);
+			return true;
+		}
+		return false;
 	}
 	
 	public boolean setDuration(int duration, int col, int row) {
 		if (duration < 0) throw new RuntimeException("Duration cannot be negative");
 		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
+		
 		if (rn == null) return false;
 		if (duration == 0) {
 			this.deleteRect(this.convertTo1DCoord(row, col), rectArr, pane);
