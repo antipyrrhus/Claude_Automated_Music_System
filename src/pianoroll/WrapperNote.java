@@ -10,7 +10,8 @@ public class WrapperNote extends Note {
 	public WrapperNote(int pitch) {
 		super(pitch);
 		this.isNoteOff = false;
-		this.colorInt = ColorIntMap.colorHashMap.get(Color.GREEN);
+//		this.colorInt = ColorIntMap.colorHashMap.get(Color.GREEN);
+		this.colorInt = ColorIntMap.rgbHashMap.get(Color.GREEN);
 	}
 	
 	public WrapperNote(Note n, int colIdx) {
@@ -37,7 +38,20 @@ public class WrapperNote extends Note {
 	}
 	
 	public WrapperNote(int pitch, int colIdx, Color color, Color origColor, int duration) {
-		this(pitch, colIdx, ColorIntMap.colorHashMap.get(color), ColorIntMap.colorHashMap.get(origColor), duration);
+//		this(pitch, colIdx, ColorIntMap.colorHashMap.get(color), ColorIntMap.colorHashMap.get(origColor), duration);
+		this(pitch, colIdx, ColorIntMap.rgbHashMap.get(color), ColorIntMap.rgbHashMap.get(origColor), duration);
+		
+	}
+	
+	public WrapperNote(int pitch, int colIdx, Color color, Color origColor, int duration, int volume, int channel) {
+		this(pitch, colIdx, color, origColor, duration);
+		this.setChannel(channel);
+		this.setVolume(volume);
+	}
+	
+	public WrapperNote(RectangleNote rn) {
+		this(ScorePane.ROWS - rn.getRowIdx() + PianoRollGUI.MIN_PITCH, rn.getColIdx(), rn.color, rn.origColor, rn.getLength(),
+				rn.getVolume(), rn.getChannel());
 	}
 	
 	public int getOrigColorInt() {

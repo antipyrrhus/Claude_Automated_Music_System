@@ -12,6 +12,7 @@ import convertmidi.MidiFile;
 		private int octave;   //how high of a pitch is this?
 		private int volume;   //127 = max. volume
 		private int duration; //e.g. is this a quarter note? a 16th note? Etc.
+		private int channel; //which midi channel (PianoRollGUI's mChannels[] variable) will be used to playback this note?
 		
 		//For converting integer to pitch name and vice versa
 		private final String[] NAME_ARR = {"C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "};
@@ -41,6 +42,7 @@ import convertmidi.MidiFile;
 			this.pitch = -1;
 			this.duration = MidiFile.CROTCHET;
 			this.volume = 0;
+			this.channel = 0;
 		}
 		
 		/**
@@ -70,6 +72,7 @@ import convertmidi.MidiFile;
 			this.pitch = (this.octave-1) * Harmonizer.SCALE + MAP.get(this.name);
 			this.duration = MidiFile.CROTCHET;  //by default, assume quarter note duration 
 			this.volume = MidiFile.MAX_VOL;	    //by default, assume max volume
+			this.channel = 0;
 		}
 		
 		/**
@@ -144,6 +147,14 @@ import convertmidi.MidiFile;
 			return pitch;
 		}
 
+		public int getChannel() {
+			return this.channel;
+		}
+
+		public void setChannel(int channel) {
+			this.channel = channel;
+		}
+		
 		public int getOctave() {
 			return octave;
 		}

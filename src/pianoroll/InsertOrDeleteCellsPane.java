@@ -19,7 +19,7 @@ public class InsertOrDeleteCellsPane extends BorderPane {
 	private final int PREF_WIDTH = 500;
 	private final int PREF_HEIGHT = 100;
 	private final int MAX_NUMBERFIELD_WIDTH = 50;
-	private final int MAX_CELLS_TO_ADD = 999;
+//	private final int MAX_CELLS_TO_ADD = 999;
 
 	private TextField numberFieldFrom, numberFieldTo, nColsField, colField;
 	private Stage stage;
@@ -113,7 +113,10 @@ public class InsertOrDeleteCellsPane extends BorderPane {
 					//...try to parse the the new value into an integer....
 					try {
 						int newValue_Int = Integer.parseInt(newValue);
-						if (newValue_Int > MAX_CELLS_TO_ADD || newValue_Int < 0) nColsField.setText(oldValue);
+						if (newValue_Int + pianoRollGUI.getTotalCols() > ScorePane.MAX_CELLS || 
+							newValue_Int < 0) {
+							nColsField.setText(oldValue);
+						}
 					}
 					//...and if parsing fails, then just reset the text box to the former value
 					catch(NumberFormatException nfe) {

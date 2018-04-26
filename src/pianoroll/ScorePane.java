@@ -1,10 +1,10 @@
 package pianoroll;
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
-import javafx.application.Platform;
+import convertmidi.MidiFile;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -23,12 +23,12 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 //import main.Chord;
 //import main.ChordSequence;
-import main.Note;
+//import main.Note;
 import main.TimeSignature;
 
 public class ScorePane extends VBox {	
 	
-	public static final int MAX_CELLS = 5000;
+	public static final int MAX_CELLS = 5000, DEFAULT_CELLS = 999;
 	public static final int ROWS = 88;  //88 pitches like a standard piano roll
 	private TimeSignature ts; //Time signature pertaining to this measure
 	private int col;  //No. of "columns" in this measure. Each "column" pertains to a time signature of a pitch that may be modified?
@@ -186,7 +186,7 @@ public class ScorePane extends VBox {
 	    this.setAlignment(Pos.CENTER);
 //	    if (this.pane != null) this.pane.getChildren().clear();
 	    this.getChildren().clear();
-	    this.lbl = new Label("Measure " + this.measureNum);
+	    this.lbl = new Label("");
 	    lbl.setPadding(new Insets(5,10,5,10));
 	    lbl.setStyle("-fx-background-color : darkgoldenrod ; -fx-text-fill: white; -fx-font-weight: bold");
 	    HBox hb = new HBox();
@@ -293,6 +293,7 @@ public class ScorePane extends VBox {
 	    	if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
 	    		System.out.println("Mouse Released " + e.getX() + " " + e.getY());
 	    		
+	    		//Selected notes
 	    		if (selectionMouseRect != null && e.getButton() == MouseButton.SECONDARY) {
 	    			this.pane.getChildren().remove(selectionMouseRect); //no longer need to visualize this rectangle on GUI
 		    		//get all notes inside (or in any way intersecting) the selection rectangle
@@ -357,7 +358,7 @@ public class ScorePane extends VBox {
 	            			moveSelectedNotes(this.selectedNotesRectHS, 0,0);
 	            		}
 	            	}
-	            	this.resetAllCopyRelatedVars();
+	            	
 	    		} //end else if (this.selectedNotesRectHS != null && e.getButton() == MouseButton.PRIMARY)
 	    	} //end if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
 	    	
@@ -422,12 +423,13 @@ public class ScorePane extends VBox {
 //	    			this.createColRect(leftCornerCell, widthPerCell, ROWS, heightPerCell, this.pane);
 	    			this.rectArr[rect1DCoordinate].setSelected(!this.rectArr[rect1DCoordinate].isSelected);
 	    			if (this.rectArr[rect1DCoordinate].isSelected) {
-	    				this.pianoRollGUI.playSound(this.computePitch(rect1DCoordinate));
+//	    				this.play(this.computePitch(rect1DCoordinate), this.rectArr[rect1DCoordinate].getChannel(), true);
+	    				this.pianoRollGUI.playSound(this.computePitch(rect1DCoordinate), this.rectArr[rect1DCoordinate].getChannel());
 	    			}
 	    			removeSelectedNotesGreyRect();
 	    		}
 //	    		deSelectAll();	    				    	
-	    	} else if (e.isShiftDown()){  //Extend duration of note, unless it's melody
+	    	} else if (e.isShiftDown()){  //Extend duration of note
 	        	if (leftCornerCell < this.col) {
 	        		int currIdx = get1DCoord(heightPerCell, widthPerCell, e.getX(), e.getY());
 	        		//check the previous note that exists, if any, so we can link
@@ -435,7 +437,7 @@ public class ScorePane extends VBox {
 	        		int extensionLength = -1;
 	        		for (int i = currIdx-1; i >= currIdx - (currIdx % this.col); --i) {
 	        			if (this.rectArr[i] != null) {
-	        				if (this.rectArr[i].isMelody) break;  //if melody, just break out
+//	        				if (this.rectArr[i].isMelody) break;  //if melody, just break out
 	        				prevIdx = this.convertTo1DCoord(this.computeRow(this.computePitch(i)), this.rectArr[i].colIdx);
 //	        				prevIdx = this.rectArr[i].startIdx;
 	        				extensionLength = currIdx - i;
@@ -462,8 +464,11 @@ public class ScorePane extends VBox {
 	        						if (rectArr[j+1] != null) break;
 	        						else j++;
 	        					} //end while
-	        					this.createNote(i, j, false, ColorIntMap.colorHashMap.get(rectArr[i].color),
-	        							ColorIntMap.colorHashMap.get(rectArr[i].origColor));
+	        					rectArr[i].length = (j-i+1);
+	        					rectArr[i].setWidth(this.widthPerCell * rectArr[i].length);
+	        					for (int k = i+1; k <= j; ++k) this.rectArr[k] = this.rectArr[i];
+//	        					this.createNote(i, j, false, ColorIntMap.rgbHashMap.get(rectArr[i].color),
+//	        							ColorIntMap.rgbHashMap.get(rectArr[i].origColor));
 	        					i = j;
 //	        					rectArr[i].setSelected(true);
 	        				} //end if selected
@@ -476,8 +481,11 @@ public class ScorePane extends VBox {
 		        		//Just extend the current note if one exists
 	        			System.out.println(rectArr[prevIdx]);
 	        			if (this.rectArr[prevIdx] != null) {
-			        		this.createNote(prevIdx, currIdx, true, ColorIntMap.colorHashMap.get(rectArr[prevIdx].color),
-			        				ColorIntMap.colorHashMap.get(rectArr[prevIdx].origColor));
+	        				this.rectArr[prevIdx].length = currIdx-prevIdx+1;
+	        				this.rectArr[prevIdx].setWidth(this.widthPerCell * this.rectArr[prevIdx].length);
+	        				for (int k = prevIdx+1; k <= currIdx; ++k) this.rectArr[k] = this.rectArr[prevIdx];
+//			        		this.createNote(prevIdx, currIdx, true, ColorIntMap.rgbHashMap.get(rectArr[prevIdx].color),
+//			        				ColorIntMap.rgbHashMap.get(rectArr[prevIdx].origColor));
 			        		deSelectAll();
 	        			}
 	        		}
@@ -511,7 +519,7 @@ public class ScorePane extends VBox {
 	    		this.pane.getChildren().remove(rn);
 	    		RectangleNote newRN = new RectangleNote(rn.colIdx * this.widthPerCell, rn.rowIdx * this.heightPerCell, 
 	    				widthPerCell, heightPerCell, rn.colIdx, rn.rowIdx, rn.length,
-	    				rn.isMelody, rn.isSelected, rn.color, rn.origColor, rn.index, rn.isMute);
+	    				rn.isSelected, rn.color, rn.origColor, rn.index,rn.channel, rn.volume);
 	    		
 	    		int j = i;
 	    		while (i+1 < this.rectArr.length && i / this.col == (i+1) / this.col && this.rectArr[i] == this.rectArr[i+1]) ++i;
@@ -534,7 +542,13 @@ public class ScorePane extends VBox {
 	private void resetAllCopyRelatedVars() {
 		this.selectionMouseRect = null;
 		this.copyingNotes = false;
+//		if (this.selectedNotesRectHS != null) {
+//			for (RectangleNote rn : this.selectedNotesRectHS) {
+//				rn.setSelected(false);
+//			}
+//		}
     	this.selectedNotesRectHS = null;
+    	this.deSelectAll();
     	this.selectedPrimaryNoteForDragging = null;
     	this.leftmostNoteForCopyPasting = null;
     	this.draggingNotes = false;
@@ -567,9 +581,9 @@ public class ScorePane extends VBox {
 			this.createRect(rn.colIdx + offsetCol, this.widthPerCell, rn.rowIdx + offsetRow, heightPerCell, 
 							this.pane, this.rectArr, this.convertTo1DCoord(rn.rowIdx + offsetRow, rn.colIdx + offsetCol),
 							rn.length, false,
-							rn.isMelody, rn.isSelected, rn.color, rn.origColor);
+							rn.isSelected, rn.color, rn.origColor, rn.getChannel(), rn.getVolume());
 		} //end for
-		
+		this.resetAllCopyRelatedVars();
 	}
 	
 	public void selectAllNotes() {
@@ -597,8 +611,9 @@ public class ScorePane extends VBox {
 			this.createRect(rn.colIdx + offsetCol, this.widthPerCell, rn.rowIdx + offsetRow, heightPerCell, 
 							this.pane, this.rectArr, this.convertTo1DCoord(rn.rowIdx + offsetRow, rn.colIdx + offsetCol),
 							rn.length, false,
-							rn.isMelody, rn.isSelected, rn.color, rn.origColor);
+							rn.isSelected, rn.color, rn.origColor, rn.getChannel(), rn.getVolume());
 		} //end for
+		this.resetAllCopyRelatedVars();
 	}
 	
 	/**
@@ -642,7 +657,7 @@ public class ScorePane extends VBox {
 		if (allValid) {
 			this.copySelectedNotesViaKeyboard(this.selectedNotesRectHS, offsetCol, offsetRow);
 		}
-		this.resetAllCopyRelatedVars();
+//		this.resetAllCopyRelatedVars();
 	}
 	
 	
@@ -671,39 +686,37 @@ public class ScorePane extends VBox {
 	 * @param colStartIdx
 	 * @param colEndIdx
 	 * @return return a 2D array of colors pertaining to the notes contained in the provided col indices, inclusive.
-	 * 
-	 * TODO work with this to create more options for user
+	 * UPDATE not needed. CustomFunctions class can create these types of methods
 	 */
-	public int[][] getPitchArray(int colStartIdx, int colEndIdx) {
-		int[][] ret = new int[ROWS][colEndIdx - colStartIdx + 1];
-		for (int i = 0; i < ROWS; ++i) {
-			for (int j = colStartIdx; j <= colEndIdx; ++j) {
-				RectangleNote rn = this.rectArr[this.convertTo1DCoord(i, j)];
-				//return an array of ints pertaining to each pitch's color as mapped to colorHashMap
-				if (rn != null) System.out.printf("Color at %s, %s = %s", i, j, ColorIntMap.colorHashMap.get(rn.color));
-				ret[i][j-colStartIdx] = (rn == null ? -1 : ColorIntMap.colorHashMap.get(rn.color));
-				
-			} //end for j
-		} //end for i
-		for (int i = 0; i < ROWS; ++i)
-			System.out.println(Arrays.toString(ret[i]));
-		return ret;
-		
-	}
+//	public int[][] getPitchArray(int colStartIdx, int colEndIdx) {
+//		int[][] ret = new int[ROWS][colEndIdx - colStartIdx + 1];
+//		for (int i = 0; i < ROWS; ++i) {
+//			for (int j = colStartIdx; j <= colEndIdx; ++j) {
+//				RectangleNote rn = this.rectArr[this.convertTo1DCoord(i, j)];
+//				//return an array of ints pertaining to each pitch's color as mapped to colorHashMap
+//				if (rn != null) System.out.printf("Color at %s, %s = %s", i, j, ColorIntMap.colorHashMap.get(rn.color));
+//				ret[i][j-colStartIdx] = (rn == null ? -1 : ColorIntMap.colorHashMap.get(rn.color));
+//				
+//			} //end for j
+//		} //end for i
+//		for (int i = 0; i < ROWS; ++i)
+//			System.out.println(Arrays.toString(ret[i]));
+//		return ret;
+//		
+//	}
 	
 	public RectangleNote getNote(int col, int row) {
-		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
-		return rn;
+		return this.rectArr[this.convertTo1DCoord(row, col)];
 	}
 	
-	public boolean isValidInstrument(int instr) {
-		if (instr < 0 || instr >= this.pianoRollGUI.getInstrumentArr().length) return false;
-		return true;
-	}
+//	public boolean isValidInstrument(int instr) {
+//		if (instr < 0 || instr >= this.pianoRollGUI.getInstrumentArr().length) return false;
+//		return true;
+//	}
 	
-	public boolean changeInstrument(int instr) {
+	public boolean changeInstrument(int instr, int mChannel) {
 		if (this.isValidInstrument(instr)) {
-			this.pianoRollGUI.changeInstrument(instr);
+			this.pianoRollGUI.changeInstrument(instr, mChannel);
 			return true;
 		}
 		return false;
@@ -756,9 +769,9 @@ public class ScorePane extends VBox {
 	public int getColor(int col, int row) {
 		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
 		if (rn==null) return -1; //-1 indicates there is no note here
-		if (ColorIntMap.colorHashMap.get(rn.color)==null) throw new RuntimeException(""
+		if (ColorIntMap.rgbHashMap.get(rn.color)==null) throw new RuntimeException(""
 				+ "Unexpected error: The current note's color does not have a corresponding integer value mapped to it.");
-		return ColorIntMap.colorHashMap.get(rn.color);
+		return ColorIntMap.rgbHashMap.get(rn.color);
 	}
 	
 	public boolean setColor(int col, int row, int colorInt) {
@@ -772,11 +785,58 @@ public class ScorePane extends VBox {
 		if (rn == null) {
 			//create new note of length 1, then color it
 			rn = new RectangleNote(col * this.widthPerCell, row * this.heightPerCell, this.widthPerCell, this.heightPerCell,
-					col, row, 1, false, false, Color.GREEN, Color.GREEN, rectIndex, false);
+					col, row, 1, false, Color.GREEN, Color.GREEN, rectIndex, 
+					pianoRollGUI.getFocusedMidiChannel(), MidiFile.MAX_VOL);
+			this.pane.getChildren().add(rn);
+			this.rectArr[rectIndex] = rn;
 		}
 		rn.setColor(colorInt);
-		if (ColorIntMap.colorHashMap.get(rn.color) == colorInt) return true;
+		
+		if (ColorIntMap.rgbHashMap.get(rn.color) == colorInt) return true;
 		return false;
+	}
+	
+	public boolean setColor(int col, int row, Color color) {
+		int rectIndex = this.convertTo1DCoord(row, col);
+		RectangleNote rn = this.rectArr[rectIndex];
+		if (rn == null) {
+			//create new note of length 1, then color it
+			rn = new RectangleNote(col * this.widthPerCell, row * this.heightPerCell, this.widthPerCell, this.heightPerCell,
+					col, row, 1, false, Color.GREEN, Color.GREEN, rectIndex,
+					pianoRollGUI.getFocusedMidiChannel(), MidiFile.MAX_VOL);
+			this.pane.getChildren().add(rn);
+			this.rectArr[rectIndex] = rn;
+		}
+		rn.setColor(color);
+		
+		if (rn.getColor() == color) return true;
+		return false;
+	}
+	public int getMaxVol() {
+		return MidiFile.MAX_VOL;
+	}
+	
+	public void setNoteVolume(int col, int row, int vol) {
+		int rectIndex = this.convertTo1DCoord(row, col);
+		RectangleNote rn = this.rectArr[rectIndex];
+		if (rn == null) return;
+		rn.setVolume(vol);
+	}
+	
+	public int getMidiChannelLength() {
+		return this.pianoRollGUI.getNumMidiInstrumentChannels();
+	}
+	
+	public boolean isValidInstrument(int instr) {
+		if (instr < 0 || instr >= pianoRollGUI.getNumMidiInstruments()) return false;
+		return true;
+	}
+	
+	public void setNoteToChannel(int col, int row, int channel) {
+		int rectIndex = this.convertTo1DCoord(row, col);
+		RectangleNote rn = this.rectArr[rectIndex];
+		if (rn == null) return; 
+		rn.setChannel(channel);
 	}
 	
 //	public boolean isStartOfNote(int col, int row) {
@@ -819,12 +879,13 @@ public class ScorePane extends VBox {
 		ArrayList<WrapperNote> wnAL = new ArrayList<>();
 		for (RectangleNote rn : rnHS) {
 			numColsToInsert = Math.max(numColsToInsert, rn.colIdx - leftMostIndex + rn.length);
-			wnAL.add(new WrapperNote(this.computePitchFromRow(rn.rowIdx), 
-									startColIdx + (rn.colIdx - leftMostIndex), 
-									rn.color, 
-									rn.origColor, 
-									rn.length)
-									);
+//			wnAL.add(new WrapperNote(this.computePitchFromRow(rn.rowIdx), 
+//									startColIdx + (rn.colIdx - leftMostIndex), 
+//									rn.color, 
+//									rn.origColor, 
+//									rn.length)
+//									);
+			wnAL.add(new WrapperNote(rn));
 		}
 		
 		int currColIdx = startColIdx;
@@ -869,15 +930,23 @@ public class ScorePane extends VBox {
 		//Also create arraylist of WrapperNotes, so we can feed it into insertCells() method in PianoRollGUI
 		for (RectangleNote rn : rnHS) {
 			numColsToInsert = Math.max(numColsToInsert, rn.colIdx - leftMostIndex + rn.length);
-			wnAL.add(new WrapperNote(this.computePitchFromRow(rn.rowIdx), 
-									colIdx + (rn.colIdx - leftMostIndex), 
-									rn.color, 
-									rn.origColor, 
-									rn.length)
-									);
+			wnAL.add(new WrapperNote(rn));
 		}
 		
-		this.pianoRollGUI.insertCells(numColsToInsert, colIdx, true, wnAL);		
+		//Ensure that the number of columns to insert does not exceed the max. allowed number of columns
+		if (numColsToInsert + this.getCol() > MAX_CELLS) {
+			throwErrorAlertDialog("Abort", String.format("This would cause the number of cells to exceed the max. allowed (%s)."
+					+ " Command canceled.",	MAX_CELLS));
+		} else {
+			this.pianoRollGUI.insertCells(numColsToInsert, colIdx, true, wnAL);
+		}
+	}
+	
+	public void throwErrorAlertDialog(String title, String contentText) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setTitle(title);
+		alert.setContentText(contentText);
+		alert.showAndWait();
 	}
 	
 	public void zoomOut() {
@@ -923,7 +992,8 @@ public class ScorePane extends VBox {
 		for (int i = 0; i < this.rectArr.length; ++i) {
     		//Change selected note rectangles to black, UNLESS it's a melody.
     		RectangleNote rn = rectArr[i];
-    		if (rn == null || rn.isMelody) continue;
+//    		if (rn == null || rn.isMelody) continue;
+    		if (rn == null) continue;
     		System.out.println(rn.colIdx + " " + rn.length);
 //    		if (intersects(rn.startIdx, rn.startIdx + rn.length - 1, xStart, xEnd) &&
 //    			intersects(this.getRow(i), this.getRow(i), yStart, yEnd)) {
@@ -988,69 +1058,83 @@ public class ScorePane extends VBox {
 		return this.selectionMouseRect;
 	}
 	
+	public void createNote(WrapperNote wn, boolean playback) {
+		int colIdx = wn.getColIdx();
+		int rowIdx = this.computeRow(wn.getPitch());
+		int rectArrIndex = this.convertTo1DCoord(rowIdx, colIdx);
+		this.createRect(colIdx, widthPerCell, rowIdx, heightPerCell,
+				pane, rectArr, rectArrIndex, wn.getDuration(), false, false,
+				ColorIntMap.intToRGBArr[wn.getColorInt()], ColorIntMap.intToRGBArr[wn.getOrigColorInt()],
+				wn.getChannel(), wn.getVolume());
+		if (playback) this.play(wn.getPitch(), wn.getChannel(), true);
+	}
+	
 	/**
+	 * (DEPRECATED) should be replaced with createNote(WrapperNote wn, boolean playback),
+	 * which now captures all features of the note
+	 * 
 	 * Creates a note on the measure, at the specified column index.
 	 * Captures the duration of the note and specifies the length of the note accordingly.
 	 * @param n
 	 * @param colIdx
 	 * @param durationPerCell
 	 */
-	public void createNote(WrapperNote n, int colIdx, int durationPerCell, boolean playback) {
-		if (n.getPitch() == -1) return;
-		int lengthOfNote = n.getDuration() / durationPerCell;
-		int rowIdx = this.computeRow(n.getPitch());
-		int startIdx = this.convertTo1DCoord(rowIdx, colIdx);
-		int endIdx = startIdx + lengthOfNote - 1;
-		this.createNote(startIdx, endIdx, playback, n.getColorInt(), n.getOrigColorInt());
-	}
+//	public void createNote(WrapperNote n, int colIdx, int durationPerCell, boolean playback) {
+//		if (n.getPitch() == -1) return;
+//		int lengthOfNote = n.getDuration() / durationPerCell;
+//		int rowIdx = this.computeRow(n.getPitch());
+//		int startIdx = this.convertTo1DCoord(rowIdx, colIdx);
+//		int endIdx = startIdx + lengthOfNote - 1;
+//		this.createNote(startIdx, endIdx, playback, n.getColorInt(), n.getOrigColorInt());
+//	}
 	
-	public void createNote(Note n, int colIdx, int durationPerCell, boolean playback) {
-		createNote(new WrapperNote(n, colIdx), colIdx, durationPerCell,playback);
-	}
+//	public void createNote(Note n, int colIdx, int durationPerCell, boolean playback) {
+//		this.createNote(new WrapperNote(n, colIdx), colIdx, durationPerCell,playback);
+//	}
 	
 	/**
 	 * Overloaded helper, invoked by the public createNote() method.
 	 * @param startIdx
 	 * @param endIdx
 	 */
-	private void createNote(int startIdx, int endIdx, boolean playback, int color, int origColor) {
-		if (startIdx < 0 || startIdx >= rectArr.length || endIdx < 0 || endIdx >= rectArr.length) {
-			System.out.println("ERROR: index out of bounds, one or more MIDI notes aren't supported by this sequencer");
-			return;
-		}
-		
-		//Delete any existing note in this range
-		if (this.rectArr[startIdx] != null) {
-			this.pane.getChildren().remove(rectArr[startIdx]);
-		}
-		if (this.rectArr[endIdx] != null) {
-			this.pane.getChildren().remove(rectArr[endIdx]);
-		}
-		
-		for (int i = startIdx; i <= endIdx; ++i) this.rectArr[i] = null;
-		
-		
-		//Create two notes then combine them.
-		this.createRect(getCol(startIdx), widthPerCell, getRow(startIdx), heightPerCell, this.pane, this.rectArr, startIdx);
-		this.createRect(getCol(endIdx), widthPerCell, getRow(endIdx), heightPerCell, this.pane, this.rectArr, endIdx);
-		
-		RectangleNote rn = this.combineRect(this.rectArr[startIdx], this.rectArr[endIdx]);
-//		rn.index = startIdx;
-		this.pane.getChildren().remove(this.rectArr[startIdx]);
-		this.pane.getChildren().remove(this.rectArr[endIdx]);
-		this.rectArr[startIdx] = null;
-		this.rectArr[endIdx] = null;
-
-		rn.setColor(color);
-		rn.setOrigColor(origColor);
-		
-		for (int i = startIdx; i <= endIdx; ++i) {
-			this.rectArr[i] = rn;
-		}
-//		if (startIdx == endIdx) rn.setFill(Color.GREEN);
-		this.pane.getChildren().add(rn);
-		if (playback) this.play(computePitch(endIdx));
-	}
+//	private void createNote(int startIdx, int endIdx, boolean playback, int color, int origColor) {
+//		if (startIdx < 0 || startIdx >= rectArr.length || endIdx < 0 || endIdx >= rectArr.length) {
+//			System.out.println("ERROR: index out of bounds, one or more MIDI notes aren't supported by this sequencer");
+//			return;
+//		}
+//		
+//		//Delete any existing note in this range
+//		if (this.rectArr[startIdx] != null) {
+//			this.pane.getChildren().remove(rectArr[startIdx]);
+//		}
+//		if (this.rectArr[endIdx] != null) {
+//			this.pane.getChildren().remove(rectArr[endIdx]);
+//		}
+//		
+//		for (int i = startIdx; i <= endIdx; ++i) this.rectArr[i] = null;
+//		
+//		
+//		//Create two notes then combine them.
+//		this.createRect(getCol(startIdx), widthPerCell, getRow(startIdx), heightPerCell, this.pane, this.rectArr, startIdx);
+//		this.createRect(getCol(endIdx), widthPerCell, getRow(endIdx), heightPerCell, this.pane, this.rectArr, endIdx);
+//		
+//		RectangleNote rn = this.combineRect(this.rectArr[startIdx], this.rectArr[endIdx]);
+////		rn.index = startIdx;
+//		this.pane.getChildren().remove(this.rectArr[startIdx]);
+//		this.pane.getChildren().remove(this.rectArr[endIdx]);
+//		this.rectArr[startIdx] = null;
+//		this.rectArr[endIdx] = null;
+//
+//		rn.setColor(color);
+//		rn.setOrigColor(origColor);
+//		
+//		for (int i = startIdx; i <= endIdx; ++i) {
+//			this.rectArr[i] = rn;
+//		}
+////		if (startIdx == endIdx) rn.setFill(Color.GREEN);
+//		this.pane.getChildren().add(rn);
+//		if (playback) this.play(computePitch(endIdx));
+//	}
 	
 	//Notate pitch given the array index.
 //	private void createPitch(int rect1DCoordinateIdx) {
@@ -1073,9 +1157,9 @@ public class ScorePane extends VBox {
 		this.numCellsPerMeasure = n;
 	}
 	
-	public int getNumColsPerMeasure() {
-		return this.numCellsPerMeasure;
-	}
+//	public int getNumColsPerMeasure() {
+//		return this.numCellsPerMeasure;
+//	}
 	
 	public void setMeasureOffset(int o) {
 		this.measureOffset = o;
@@ -1115,27 +1199,27 @@ public class ScorePane extends VBox {
 		return this.next;
 	}
 	
-	public void lockMelodyNotes(boolean lock) {
-		//Get the top note in each column and lock them.
-		for (int col = 0; col < this.col; ++col) {
-			int index = this.convertTo1DCoord(0, col);
-			for (int i = index; i < this.rectArr.length; i += this.col) {
-				if (this.rectArr[i] != null) {
-					if (col > 0 && this.rectArr[i - 1] == this.rectArr[i]) {}
-					else this.rectArr[i].setMelody(lock);
-					break;
-				}
-			} //end for i
-		} //end for col
-	}
+//	public void lockMelodyNotes(boolean lock) {
+//		//Get the top note in each column and lock them.
+//		for (int col = 0; col < this.col; ++col) {
+//			int index = this.convertTo1DCoord(0, col);
+//			for (int i = index; i < this.rectArr.length; i += this.col) {
+//				if (this.rectArr[i] != null) {
+//					if (col > 0 && this.rectArr[i - 1] == this.rectArr[i]) {}
+//					else this.rectArr[i].setMelody(lock);
+//					break;
+//				}
+//			} //end for i
+//		} //end for col
+//	}
 	
-	private RectangleNote combineRect(RectangleNote r1, RectangleNote r2) {
-		int startIdx = Math.min(r1.colIdx, r2.colIdx);
-		int length = Math.max(r1.colIdx + r1.length, r2.colIdx + r2.length) - startIdx;
-		return new RectangleNote(Math.min(r1.getX(), r2.getX()), r1.getY(), 
-				this.widthPerCell, this.heightPerCell, startIdx, r2.rowIdx, length,
-				r1.isMelody, r1.isSelected, r1.color, r1.origColor, r1.index);
-	}
+//	private RectangleNote combineRect(RectangleNote r1, RectangleNote r2) {
+//		int startIdx = Math.min(r1.colIdx, r2.colIdx);
+//		int length = Math.max(r1.colIdx + r1.length, r2.colIdx + r2.length) - startIdx;
+//		return new RectangleNote(Math.min(r1.getX(), r2.getX()), r1.getY(), 
+//				this.widthPerCell, this.heightPerCell, startIdx, r2.rowIdx, length,
+//				r1.isSelected, r1.color, r1.origColor, r1.index);
+//	}
 	
 	public void deleteAllNotes() {
 		for (int i = 0; i < this.rectArr.length; i++) {
@@ -1145,7 +1229,8 @@ public class ScorePane extends VBox {
 	
 	private void deleteRect(int index, RectangleNote[] rectArr, Pane pane) {
 		RectangleNote rect = this.rectArr[index];
-		if (rect != null && !rect.isMelody) {
+//		if (rect != null && !rect.isMelody) {
+		if (rect != null) {
 			pane.getChildren().remove(rect);
 //	    	rectArr[index] = null;
 	    	int[] rowcol = this.convertToRowCol(index);
@@ -1170,17 +1255,25 @@ public class ScorePane extends VBox {
 	
 	private void createRect(int colIndex, double widthPerCell, int rowIndex, double heightPerCell, Pane pane, 
 			RectangleNote[] rectArr, int rectArrIndex, int length, boolean createColRectangle) {
-		createRect(colIndex, widthPerCell, rowIndex, heightPerCell, pane, rectArr, rectArrIndex, 1, true,
-				false, false, Color.GREEN, Color.GREEN);
+		createRect(colIndex, widthPerCell, rowIndex, heightPerCell, pane, rectArr, rectArrIndex, length, createColRectangle,
+				false, Color.GREEN, Color.GREEN);
 	}
 	
 	private void createRect(int colIndex, double widthPerCell, int rowIndex, double heightPerCell, Pane pane, 
 			RectangleNote[] rectArr, int rectArrIndex, int length, boolean createColRectangle,
-			boolean isMelody, boolean isSelected, Color color, Color origColor) {
+			boolean isSelected, Color color, Color origColor) {
+		this.createRect(colIndex, widthPerCell, rowIndex, heightPerCell, pane, rectArr, rectArrIndex, length, createColRectangle,
+				false, color, origColor, pianoRollGUI.getFocusedMidiChannel(), MidiFile.MAX_VOL);
+	}
+	
+	private void createRect(int colIndex, double widthPerCell, int rowIndex, double heightPerCell, Pane pane, 
+			RectangleNote[] rectArr, int rectArrIndex, int length, boolean createColRectangle,
+			boolean isSelected, Color color, Color origColor, int channel, int volume) {
 		if (rectArr[rectArrIndex] == null) {
 			RectangleNote rect = new RectangleNote(colIndex*widthPerCell, rowIndex*heightPerCell, widthPerCell, 
 													heightPerCell, colIndex, rowIndex, length,
-													isMelody, isSelected, color, origColor, rectArrIndex);
+													isSelected, color, origColor, rectArrIndex,
+													channel, volume);
 	    	pane.getChildren().add(rect);
 	    	for (int i = rect.index; i <= rect.index + length - 1; ++i)	rectArr[i] = rect;
 	    	if (createColRectangle)	this.createColRect(colIndex, widthPerCell, ROWS, heightPerCell, pane);
@@ -1195,6 +1288,7 @@ public class ScorePane extends VBox {
 		this.activeCol = -1;
 //		}
 	}
+	
 	
 	private void createColRect(int colIndex, double widthPerCell, int totalRows, double heightPerCell, Pane pane) {
 		System.out.println("activeCol, colIndex: " + this.activeCol + " " + colIndex);
@@ -1316,6 +1410,7 @@ public class ScorePane extends VBox {
 //		return this.getWidth();
 //	}
 	
+	
 	public boolean advanceActiveColumn(boolean forward) {
 		int activeColumn = getActiveColumn() + (forward ? 1 : -1);
 		if (activeColumn >= this.col || activeColumn < 0) {
@@ -1327,21 +1422,25 @@ public class ScorePane extends VBox {
 		}
 	}
 	
+	public int getMeasureOffset() {
+		return this.measureOffset;
+	}
+	
 	public int getMeasureNum() {
 		return measureNum;
 	}
 	
-	public void setMeasureNum(int measureNum) {
-		this.measureNum = measureNum;
-		this.lbl.setText("Measure " + this.measureNum);
-	}
+//	public void setMeasureNum(int measureNum) {
+//		this.measureNum = measureNum;
+//		this.lbl.setText("Measure " + this.measureNum);
+//	}
 
 
 	public void play(int pitch) {
-		play(pitch, true);
+		play(pitch, pianoRollGUI.getFocusedMidiChannel(), true);
 	}
 	
-	public void play(int pitch, boolean realTimePlayback) {
+	public void play(int pitch, int channel, boolean realTimePlayback) {
 		//notate the pitch on this measure, inside the column rectangle if one already exists,
 		//and inside the first column (creating the column rectangle along the way) otherwise.
 		int activeColumn = getActiveColumn();
@@ -1351,11 +1450,15 @@ public class ScorePane extends VBox {
 			this.createColRect(activeColumn, this.widthPerCell, ROWS, this.heightPerCell,this.pane);
 		}
 		this.notate(pitch, activeColumn);
-		
+
 		//play pitch sound
 		//Move this function over to the pianorollGUI so we don't need multiple mchannels for every measure
-		if (realTimePlayback) this.pianoRollGUI.playSound(pitch);
+		if (realTimePlayback) this.pianoRollGUI.playSound(pitch, channel);
 	}
+	
+//	public void play(int pitch, boolean realTimePlayback) {
+//		
+//	}
 	
 	private void notate(int pitch, int colIdx) {
 		int pitchRow = computeRow(pitch);
@@ -1448,12 +1551,15 @@ public class ScorePane extends VBox {
 		//Begin search on the column right after the last note in the given parameter
 		//by initializing rnALArr[k] = All the Notes contained in the (k + startColIndex)-th column index.
 		int startSearchColIndex = rnAL.get(rnAL.size() - 1).colIdx + 1;
-		ArrayList<RectangleNote>[] rnALArr = new ArrayList[this.col - startSearchColIndex];
+		@SuppressWarnings("unchecked")
+		ArrayList<RectangleNote>[] rnALArr = new ArrayList[this.col - startSearchColIndex]; //unavoidable warning, suppressed
 		for (int i = startSearchColIndex; i < this.col; ++i) {
 			rnALArr[i - startSearchColIndex] = getAllRectangleNotesInColumn(i);
 		}
 		
 		//Now make up an array of arraylists of the given parameter, rnAL
+		@SuppressWarnings("unchecked")
+		//unavoidable warning, suppressed
 		ArrayList<RectangleNote>[] givenParamRNALArr = new ArrayList[startSearchColIndex - rnAL.get(0).colIdx];
 		int startColIndexOfGivenAL = rnAL.get(0).colIdx;
 		int index = 0;
@@ -1469,7 +1575,6 @@ public class ScorePane extends VBox {
 		
 		ArrayList<RectangleNote> ret = null;
 		for (int i = 0; i < rnALArr.length - givenParamRNALArr.length; ++i) {
-			//TODO consider implementing similarity measure (e.g. 90% match), and option for allowing transposed patterns too
 			ret = getALIfEqualPatternFound(givenParamRNALArr, rnALArr, i);
 			if (ret != null) return ret;
 		}
@@ -1535,9 +1640,7 @@ public class ScorePane extends VBox {
 		while (i <= endColIdx) {
 			int k = this.convertTo1DCoord(rowIdx, i);
 			if (this.rectArr[k] != null) {
-				WrapperNote n = new WrapperNote(this.computePitchFromRow(rowIdx), i,
-												ColorIntMap.colorHashMap.get(this.rectArr[k].color),
-												ColorIntMap.colorHashMap.get(this.rectArr[k].origColor));
+				WrapperNote n = new WrapperNote(rectArr[k]);
 //				n.setIdx(i);
 				System.out.println(n);
 				
@@ -1571,7 +1674,7 @@ public class ScorePane extends VBox {
 	public ArrayList<Integer> getAllPitchesInColumn(int colIndex, boolean excludeMuteNotes) {
 		ArrayList<Integer> ret = new ArrayList<>();
 		for (int i = colIndex; i < this.rectArr.length; i += this.col) {
-			if (this.rectArr[i] != null && !this.rectArr[i].isMute) {
+			if (this.rectArr[i] != null && !this.rectArr[i].isMute()) {
 				int pitch = this.computePitch(i);
 				ret.add(pitch);
 			}
@@ -1583,10 +1686,11 @@ public class ScorePane extends VBox {
 	public ArrayList<WrapperNote> getAllNotesInColumn(int colIndex, boolean excludeMuteNotes) {
 		ArrayList<WrapperNote> ret = new ArrayList<>();
 		for (int i = colIndex; i < this.rectArr.length; i += this.col) {
-			if (this.rectArr[i] != null && !this.rectArr[i].isMute) {
-				WrapperNote wn = new WrapperNote(this.computePitch(i), rectArr[i].colIdx, 
-												rectArr[i].color, rectArr[i].origColor, 
-												rectArr[i].length);
+			if (this.rectArr[i] != null && !this.rectArr[i].isMute()) {
+//				WrapperNote wn = new WrapperNote(this.computePitch(i), rectArr[i].colIdx, 
+//												rectArr[i].color, rectArr[i].origColor, 
+//												rectArr[i].length);
+				WrapperNote wn = new WrapperNote(rectArr[i]);
 				ret.add(wn);
 			}
 		}
@@ -1660,8 +1764,17 @@ public class ScorePane extends VBox {
 		//If the note is held, then the SAME RectangleNote object should be contained in both.
 		if (this.rectArr[start] == this.rectArr[end]) return true;
 		return false;
-		
 	}
+	
+//	public boolean isHeld(WrapperNote note, int colStartIdx, int colEndIdx) {
+//		if (colStartIdx < 0) return false;
+//		int rowIdx = this.computeRow(note.getPitch());
+//		int start = this.convertTo1DCoord(rowIdx, colStartIdx);
+//		int end = this.convertTo1DCoord(rowIdx, colEndIdx);
+//		if (this.rectArr[start] == null) return false;
+//		if (this.rectArr[start] == this.rectArr[end]) return true;
+//		return false;
+//	}
 	
 	public TimeSignature getTs() {
 		return ts;

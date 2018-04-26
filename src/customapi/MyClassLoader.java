@@ -7,21 +7,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-//TODO testing dynamic reloading of classes
+/**
+ * Allows for dynamic manual reloading of classes, i.e. CustomFunctions
+ *
+ */
 public class MyClassLoader extends ClassLoader{
 
     public MyClassLoader(ClassLoader parent) {
         super(parent);
     }
 
-    public Class loadClass(String name) throws ClassNotFoundException {
-        if(!"reflection.CustomFunctions".equals(name))
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        if(!"customapi.CustomFunctions".equals(name))
                 return super.loadClass(name);
 
+        
         try {
-        	//TODO change folder
-            String url = "file:C:/data/projects/classes/reflection/CustomFunctions.class";
-            URL myUrl = new URL(url);
+            String url = "./bin/customapi/CustomFunctions.class";
+            URL myUrl = new URL(new URL("file:"), url);
             URLConnection connection = myUrl.openConnection();
             InputStream input = connection.getInputStream();
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -36,7 +39,7 @@ public class MyClassLoader extends ClassLoader{
 
             byte[] classData = buffer.toByteArray();
 
-            return defineClass("reflection.CustomFunctions",
+            return defineClass("customapi.CustomFunctions",
                     classData, 0, classData.length);
 
         } catch (MalformedURLException e) {
@@ -46,26 +49,5 @@ public class MyClassLoader extends ClassLoader{
         }
 
         return null;
-    }
-
-
-
-    public static void main(String[] args) throws
-    ClassNotFoundException,
-    IllegalAccessException,
-    InstantiationException {
-
-    	ClassLoader parentClassLoader = MyClassLoader.class.getClassLoader();
-    	MyClassLoader classLoader = new MyClassLoader(parentClassLoader);
-    	Class myObjectClass = classLoader.loadClass("reflection.CustomFunctions");
-    	
-    	CustomFunctions sb = (CustomFunctions)myObjectClass.newInstance();
-
-    	//create new class loader so classes can be reloaded.
-    	classLoader = new MyClassLoader(parentClassLoader);
-    	myObjectClass = classLoader.loadClass("reflection.CustomFunctions");
-
-    	sb = (CustomFunctions) myObjectClass.newInstance();
-
     }
 }

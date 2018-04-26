@@ -13,8 +13,8 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
-import org.jfugue.midi.MidiFileManager;
-import org.jfugue.pattern.Pattern;
+//import org.jfugue.midi.MidiFileManager;
+//import org.jfugue.pattern.Pattern;
 
 import main.Chord_NoLimit;
 import main.Note;
@@ -256,8 +256,8 @@ public class ReadMidi {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Pattern pattern = MidiFileManager.loadPatternFromMidi(new File("test1.mid"));
-        System.out.println(pattern);
+//		Pattern pattern = MidiFileManager.loadPatternFromMidi(new File("test1.mid"));
+//        System.out.println(pattern);
 	}
 
 }

@@ -43,6 +43,7 @@ public class MidiFile
 	public static final int MIN_DURATION = 1;
 	public static final int MAX_DURATION = SEMIBREVE;
 	public static final int MAX_VOL = 127;
+	public static final int MAX_MIDI_CHANNELS = 16;
 	
 	public static final int MULT = 64; //multipler for real-time playback
 	

@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.sound.midi.Instrument;
 import javax.sound.midi.InvalidMidiDataException;
@@ -29,6 +30,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -67,22 +69,27 @@ public class PianoRollGUI extends Application {
 	private BorderPane bp;
 	private ArrayList<ScorePane> measurePaneAL;
 	private ScorePane focusedScorePane;
-	private int midi_instrument;
+	private int[] midiInstrumentArr;
 	private int tempo;				//duration of EACH CELL in a measure.
 	private KeyPressHandler keyPressHandler;
 //	private volatile boolean cancelTask;  //cancels existing concurrent thread (stops real-time playback)
 	private boolean chordBuilderMode;
+	private CheckBox melodyChordModeCB;
 	private Scene scene;
 	private static MidiChannel[] mChannels;
+	private int focusedMidiChannel;
 	private Synthesizer midiSynth;
 	private Instrument[] instrumentArr;
 	private MidiFile midifile;
+	private boolean isAutoLoop;
+	private CheckBox autoLoopChkBox;
 	private Menu menuFile, menuEdit, menuPlayback, menuView;
 	private MenuBar menuBar;
-	private static final int DEFAULT_TOTAL_COLS = 999;
+	private static final int DEFAULT_TOTAL_COLS = ScorePane.DEFAULT_CELLS;
 	private static final int STAGE_DEFAULT_WIDTH = 1800, STAGE_DEFAULT_HEIGHT = 900;
 	
-	private ArrayList<Integer> prevAL, currAL;
+//	private ArrayList<Integer> prevAL, currAL;
+	private ArrayList<WrapperNote> prevNotesAL, currNotesAL;
 	private int currColIdx;
 	
 	private File currSaveFile;
@@ -119,27 +126,50 @@ public class PianoRollGUI extends Application {
     	}
     	
     	public void run() {
-    		currAL = startIdx == 0 ? null : focusedScorePane.getAllPitchesInColumn(startIdx - 1, true);
-    		for (int i = startIdx; i < focusedScorePane.getNumCells(); ++i) {
+    		boolean playedThroughOnce = false;
+    		/* Keep this loop going as long as at least one of the following conditions is met: 
+    		 * 1) we have NOT played through to the end at least once; OR
+    		 * 2) the auto loop option is ON */
+    		while (!playedThroughOnce || PianoRollGUI.this.isAutoLoop()) {
     			if (cancelTask) break;
-    			prevAL = currAL;
-    			currAL = focusedScorePane.getAllPitchesInColumn(i, true);
-    			playBack(currAL, i, prevAL);
-    			autoScrollPane(sp, i);
-    			//Use runlater() because we can't control JavaFX application updates within this thread otherwise.
+    			//prior to starting playback, make sure to auto-scroll to the right starting column
     			Platform.runLater(
     					() -> {
-    						PianoRollGUI.this.advanceCol(true);
+    						PianoRollGUI.this.focusedScorePane.setActiveColumn(startIdx);
+    						autoScrollPane(sp, startIdx);
     						updateInfoPane();
     					}
-    					);
-    		}
+    			);
+//	    		currAL = startIdx == 0 ? null : focusedScorePane.getAllPitchesInColumn(startIdx - 1, true);
+	    		for (int i = startIdx; i < focusedScorePane.getNumCells(); ++i) {
+	    			if (cancelTask) break;
+	//    			prevAL = currAL;
+	    			prevNotesAL = currNotesAL;
+	//    			currAL = focusedScorePane.getAllPitchesInColumn(i, true);
+	    			currNotesAL = focusedScorePane.getAllNotesInColumn(i, true);
+	//    			playBack(currAL, i, prevAL);
+	    			playBack(currNotesAL, i, prevNotesAL);
+	    			autoScrollPane(sp, i);
+	    			//Use runlater() because we can't control JavaFX application updates within this thread otherwise.
+	    			Platform.runLater(
+	    					() -> {
+	    						PianoRollGUI.this.advanceCol(true);
+	    						updateInfoPane();
+	    					}
+	    			);
+	    		}
+	    		playedThroughOnce = true;
+//	    		disableDuringPlayback(false);
+	    		for (WrapperNote note : currNotesAL) {
+					if (note == null) continue;
+	
+					mChannels[note.getChannel()].noteOff(note.getPitch());
+				} //end for
+	    		
+	    		
+	    		
+    		} //end while
     		disableDuringPlayback(false);
-    		for (Integer pitch : currAL) {
-				if (pitch == null) continue;
-
-				mChannels[0].noteOff(pitch);
-			} //end for
     		cancelTask = false;
 	   }
 
@@ -170,8 +200,13 @@ public class PianoRollGUI extends Application {
 
 				//get and load default instrument and channel lists
 		        instrumentArr = midiSynth.getAvailableInstruments();
+		        System.out.println(instrumentArr.length);
 		        midiSynth.loadInstrument(instrumentArr[0]);//load an instrument
 				mChannels = midiSynth.getChannels();
+				System.out.println("How many channels does mChannels have? " + mChannels.length);
+				
+				focusedMidiChannel = 0;
+				
 
 				//change instrument (optional if you want to just use the piano)
 //		        mChannels[0].programChange(0);
@@ -184,9 +219,10 @@ public class PianoRollGUI extends Application {
 //		this.midifile = new MidiFile();
 		
 		/* Information Pane */
-        this.infopane = new InfoPane(this);
+		//Auto-set all 16 instruments in midiInstrumentArr array to the default instrument (Piano, all with value 0)
+		this.midiInstrumentArr = new int[mChannels.length];
+		this.infopane = new InfoPane(this);
 		this.octave = 0;
-		this.midi_instrument = 60;
 		this.tempo = MidiFile.MINIM;
 		this.chordBuilderMode = false; //melodic sequence mode
 		this.midifile = new MidiFile();
@@ -335,7 +371,11 @@ public class PianoRollGUI extends Application {
         					//(done) use MeasurePane's createNote() method to populate the measure with the notes of varying durations.
         					//(done) then fix playback method so that it takes into account varying durations of notes
         					//and it can be stopped at any time (fix the multithreading part)
-        					this.focusedScorePane.createNote(n, currIdx, cellDuration, false);
+//        					this.focusedScorePane.createNote(n, currIdx, cellDuration, false);
+        					WrapperNote wn = new WrapperNote(n, currIdx);
+        					wn.setDuration(wn.getDuration() / cellDuration);
+        					this.focusedScorePane.createNote(wn, false);
+//        					this.focusedScorePane.createNote(n, currIdx, cellDuration, false);
         					
         				}
         			} //end for (Chord_NoLimit cn : cAL)
@@ -415,8 +455,6 @@ public class PianoRollGUI extends Application {
         insertSelected.setAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN));
         insertSelected.setOnAction(e -> {
         	this.focusedScorePane.insertNotes();
-        	//TODO testing below method. uncomment above and comment out below once done testing
-//        	this.focusedScorePane.insertPattern(focusedScorePane.getAllSelectedNotes(), 0, 10, this.getTotalCols() - 1);
         });
         
         MenuItem findNextSelectedPattern = new MenuItem("Find Next Instance of Selected Notes");
@@ -437,11 +475,14 @@ public class PianoRollGUI extends Application {
         	focusedScorePane.muteSelectedNotes(false);
         });
         
-        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Melody/Chord Mode");
+        this.melodyChordModeCB = new CheckBox();
+        setMelodyChordModeCB(this.chordBuilderMode);
+        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Chord Mode", melodyChordModeCB);
         toggleMelodyChordMode.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SLASH));
         toggleMelodyChordMode.setOnAction(e -> {
         	this.chordBuilderMode = !this.chordBuilderMode;
-        	lockMelodyNotes(chordBuilderMode);
+        	this.setMelodyChordModeCB(this.chordBuilderMode);
+//        	lockMelodyNotes(chordBuilderMode);
         	updateInfoPane();
         });
         MenuItem raiseOctave = new MenuItem("Raise Octave");
@@ -660,12 +701,14 @@ public class PianoRollGUI extends Application {
         	this.focus(this.measurePaneAL.get(0));
         	PianoRollGUI.this.playBack(focusedScorePane);
         });
+        
         MenuItem playFromCurrent = new MenuItem("Play from Current");
         playFromCurrent.setId("PlayFromCurrent");
         playFromCurrent.setAccelerator(new KeyCodeCombination(KeyCode.P));
         playFromCurrent.setOnAction(e -> {
         	PianoRollGUI.this.playBack(focusedScorePane, focusedScorePane.getActiveColumn());
         });
+        
         MenuItem stop = new MenuItem("Stop");
         stop.setId("Stop");
         stop.setAccelerator(new KeyCodeCombination(KeyCode.ESCAPE));
@@ -673,6 +716,14 @@ public class PianoRollGUI extends Application {
         	stopPlayback();
         });
         stop.setDisable(true);
+        
+        this.autoLoopChkBox = new CheckBox();
+        this.setAutoLoop(false); //initialize auto-loop to false
+        MenuItem autoLoop = new MenuItem("Auto-Loop", autoLoopChkBox);
+        autoLoop.setOnAction(e -> {
+        	this.setAutoLoop(!this.isAutoLoop()); //toggle between auto-loop and not
+        });
+        
         MenuItem changeInstr = new MenuItem("Change Instrument...");
         changeInstr.setAccelerator(new KeyCodeCombination(KeyCode.I, KeyCombination.CONTROL_DOWN));
         changeInstr.setOnAction(e -> {
@@ -684,7 +735,7 @@ public class PianoRollGUI extends Application {
         	instrStage.show(); 
         });
 
-        menuPlayback.getItems().addAll(playCurrent, playAndStep, playFromBeginning, playFromCurrent, stop, changeInstr);
+        menuPlayback.getItems().addAll(playCurrent, playAndStep, playFromBeginning, playFromCurrent, stop, autoLoop, changeInstr);
         
         menuView = new Menu("View");
         MenuItem showInfo = new MenuItem("Show/Hide Information Panel");
@@ -710,7 +761,18 @@ public class PianoRollGUI extends Application {
         	this.focusedScorePane.zoomOut();
         });
         
-        menuView.getItems().addAll(zoomIn, zoomOut, showInfo);
+        MenuItem showCustomPane = new MenuItem("Show User Custom Dialog");
+        showCustomPane.setAccelerator(new KeyCodeCombination(KeyCode.F10));
+        showCustomPane.setOnAction(e -> {
+        	Stage customStage = new Stage();
+        	CustomFunctionsPane customPane = new CustomFunctionsPane(this, customStage);
+        	customStage.setScene(new Scene(customPane));
+        	customStage.initModality(Modality.APPLICATION_MODAL);
+        	customStage.setTitle("User Defined Methods");
+        	customStage.show(); 
+        });
+        
+        menuView.getItems().addAll(zoomIn, zoomOut, showInfo, showCustomPane);
         
         menuBar.getMenus().addAll(menuFile, menuEdit, menuPlayback, menuView);
 		
@@ -743,9 +805,9 @@ public class PianoRollGUI extends Application {
 		
 	} //end public void start
 	
-	private void lockMelodyNotes(boolean lock) {
-		focusedScorePane.lockMelodyNotes(lock);
-	}
+//	private void lockMelodyNotes(boolean lock) {
+//		focusedScorePane.lockMelodyNotes(lock);
+//	}
 	
 	public void setFocusedMeasure(ScorePane m) {
 		this.focusedScorePane = m;
@@ -800,13 +862,15 @@ public class PianoRollGUI extends Application {
 	private void populate(File file, int numCol) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
-			int durationPerCell = Integer.parseInt(br.readLine());
+			br.readLine(); 	 //durationPerCell. No longer used.
 			int tempo = Integer.parseInt(br.readLine());
-			br.readLine();  //ignore the next line that contains the num of columns, because we have that info already
+			br.readLine();   //ignore the next line that contains the num of columns, because we have that info already
 			String[] ksArr = br.readLine().split(" ");  //For key signature
-			midi_instrument = Integer.parseInt(br.readLine());
+//			midi_instrument = Integer.parseInt(br.readLine());
+			String[] midiInstr = br.readLine().split(" ");
+			for (int i = 0; i < this.midiInstrumentArr.length; ++i) this.midiInstrumentArr[i] = Integer.parseInt(midiInstr[i]);
 			this.chordBuilderMode = Integer.parseInt(br.readLine()) == 1 ? true : false;
-			
+			this.setMelodyChordModeCB(chordBuilderMode);
 
 			String[] nextLine = br.readLine().split(" ");
 			int colsPerMeasure = Integer.parseInt(nextLine[0]);
@@ -826,18 +890,25 @@ public class PianoRollGUI extends Application {
 				wn.setDuration(Integer.parseInt(arr[1]));
 				wn.setIdx(Integer.parseInt(arr[2]));
 				wn.setColorInt(Integer.parseInt(arr[3]));
-				if (arr.length == 5)
+				if (arr.length >= 5) {
 					wn.setOrigColorInt(Integer.parseInt(arr[4]));
+				}
+				if (arr.length == 7) {
+					wn.setVolume(Integer.parseInt(arr[5]));
+					wn.setChannel(Integer.parseInt(arr[6]));
+				}
 				
 				if (wn.getColIdx() < focusedScorePane.getNumCells())
-					focusedScorePane.createNote(wn, wn.getColIdx(), durationPerCell, false);
+//					focusedScorePane.createNote(wn, wn.getColIdx(), durationPerCell, false);
+					focusedScorePane.createNote(wn, false);
 			}
 			this.changeKeySignature(new KeySignature(Integer.parseInt(ksArr[0]), Integer.parseInt(ksArr[1])));
 			br.close();
-			changeInstrument(midi_instrument);
+//			changeInstrument(midi_instrument);
+			this.changeAllInstruments(this.midiInstrumentArr);
 			focusedScorePane.setActiveColumn(0);
 //			this.chordBuilderMode = false;
-			if (chordBuilderMode) this.lockMelodyNotes(true);
+//			if (chordBuilderMode) this.lockMelodyNotes(true);
 			
 			focusedScorePane.setNumColsPerMeasure(colsPerMeasure);
 			focusedScorePane.setMeasureOffset(offSet);
@@ -890,13 +961,16 @@ public class PianoRollGUI extends Application {
 			writer.println(tempo);
 			writer.println(focusedScorePane.getNumCells());
 			writer.println(this.ks.getTonic() + " " + this.ks.getMode());
-			writer.println(this.midi_instrument);
+			for (int i = 0; i < this.midiInstrumentArr.length; ++i) {
+				writer.print(this.midiInstrumentArr[i] + " ");
+			}
+			writer.println();
 			writer.println(this.chordBuilderMode ? 1 : 0);
 			writer.println(this.focusedScorePane.getColsPerMeasure() + " " + this.focusedScorePane.getOffset());
 			writer.println(focusedScorePane.getWidthPerCell() + " " + this.focusedScorePane.getHeightPerCell());
 			for (WrapperNote n : noteAL) {
 				writer.println(n.getPitch() + " " + n.getDuration() + " " + n.getColIdx() + " " + 
-							n.getColorInt() + " " + n.getOrigColorInt());
+							n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 			}
 			
             writer.close();
@@ -1007,30 +1081,24 @@ public class PianoRollGUI extends Application {
 		focus(measurePane, true);
 	}
 	
-	/**
-	 * Playback the chords, given the current notes (pitch values) in column and prev notes in column.
-	 * This should help determine the note on and note off.
-	 * @param currNotesInCol
-	 * @param prevNotesInCol
-	 */
-	private void playBack(ArrayList<Integer> currNotesInCol, int currColIdx, 
-						  ArrayList<Integer> prevNotesInCol) {
-//		cancelTask = false;
+	
+	private void playBack(ArrayList<WrapperNote> currNotesInCol, int currColIdx,
+			ArrayList<WrapperNote> prevNotesInCol) {
 		if (prevNotesInCol == null) {
 			//don't bother computing note on or note off
 		} else {
-			for (Integer pitch : prevNotesInCol) {
-				if (pitch == null) continue;
-				if (!focusedScorePane.isHeld(pitch, currColIdx-1, currColIdx)) {
-					mChannels[0].noteOff(pitch);
+			for (WrapperNote note : prevNotesInCol) {
+				if (note == null) continue;
+				if (!focusedScorePane.isHeld(note.getPitch(), currColIdx-1, currColIdx)) {
+					mChannels[note.getChannel()].noteOff(note.getPitch());
 				}
 			} //end for
 		} //end if/else
 		
-		for (Integer pitch : currNotesInCol) {
-			if (pitch == null) continue;
-			if (!focusedScorePane.isHeld(pitch, currColIdx-1, currColIdx)) {
-				mChannels[0].noteOn(pitch, MidiFile.MAX_VOL);
+		for (WrapperNote note : currNotesInCol) {
+			if (note == null) continue;
+			if (!focusedScorePane.isHeld(note.getPitch(), currColIdx-1, currColIdx)) {
+				mChannels[note.getChannel()].noteOn(note.getPitch(), note.getVolume());
 			}
 			
 		}
@@ -1042,17 +1110,52 @@ public class PianoRollGUI extends Application {
 	}
 	
 	/**
+	 * Playback the chords, given the current notes (pitch values) in column and prev notes in column.
+	 * This should help determine the note on and note off.
+	 * @param currNotesInCol
+	 * @param prevNotesInCol
+	 */
+//	private void playBack(ArrayList<Integer> currNotesInCol, int currColIdx, 
+//						  ArrayList<Integer> prevNotesInCol) {
+////		cancelTask = false;
+//		if (prevNotesInCol == null) {
+//			//don't bother computing note on or note off
+//		} else {
+//			for (Integer pitch : prevNotesInCol) {
+//				if (pitch == null) continue;
+//				if (!focusedScorePane.isHeld(pitch, currColIdx-1, currColIdx)) {
+//					mChannels[0].noteOff(pitch);
+//				}
+//			} //end for
+//		} //end if/else
+//		
+//		for (Integer pitch : currNotesInCol) {
+//			if (pitch == null) continue;
+//			if (!focusedScorePane.isHeld(pitch, currColIdx-1, currColIdx)) {
+//				mChannels[0].noteOn(pitch, MidiFile.MAX_VOL);
+//			}
+//			
+//		}
+//		try {
+//			Thread.sleep(MidiFile.MULT * this.tempo); // wait time in milliseconds to control duration. The constant is arbitrary.
+//		} catch (InterruptedException ie) {
+//			ie.printStackTrace();
+//		}
+//	}
+	
+	/**
 	 * Play only the current column, then move active column forward or backward
 	 * @param advanceColForward
 	 */
 	private void playBackCurrCol(boolean forward) {
 		this.currColIdx = this.getActiveColumn();
-		ArrayList<Integer> currNotesInCol = this.focusedScorePane.getAllPitchesInColumn(currColIdx, true);
+//		ArrayList<Integer> currNotesInCol = this.focusedScorePane.getAllPitchesInColumn(currColIdx, true);
+		ArrayList<WrapperNote> currNotesInCol = this.focusedScorePane.getAllNotesInColumn(currColIdx, true);
 		this.playBack(currNotesInCol, currColIdx, null);
 
-		for (Integer pitch : currNotesInCol) {
-			if (pitch == null) continue;
-			mChannels[0].noteOff(pitch);
+		for (WrapperNote note : currNotesInCol) {
+			if (note == null) continue;
+			mChannels[note.getChannel()].noteOff(note.getPitch());
 		}
 		if (forward) this.advanceCol(forward);
 	}
@@ -1067,8 +1170,11 @@ public class PianoRollGUI extends Application {
 		
 		this.currColIdx = colIdx;
 		measurePane.setActiveColumn(colIdx);
-		this.prevAL = null;
-		this.currAL = measurePane.getAllPitchesInColumn(currColIdx, true);
+//		this.prevAL = null;
+		this.prevNotesAL = null;
+		
+//		this.currAL = measurePane.getAllPitchesInColumn(currColIdx, true);
+		this.currNotesAL = measurePane.getAllNotesInColumn(currColIdx, true);
 		
 		PianoRollGUI.this.disableDuringPlayback(true);
 		playBackThread = new MyRunnable(currColIdx);
@@ -1141,7 +1247,7 @@ public class PianoRollGUI extends Application {
 	private void disableMenuItemsDuringPlayback(boolean playBackInProgress) {
 		for (Menu menu : menuBar.getMenus()) {
 			for (MenuItem menuitem : menu.getItems()) {
-				if (menu.getText().equalsIgnoreCase("View")) continue;
+				if (menu.getText().equalsIgnoreCase("View") || menuitem.getText().equalsIgnoreCase("Auto-loop")) continue;
 				menuitem.setDisable(playBackInProgress);
 				if (menuitem.getText().equalsIgnoreCase("Stop")) {
 					menuitem.setDisable(!playBackInProgress);
@@ -1307,6 +1413,15 @@ public class PianoRollGUI extends Application {
 		}
 	}
 	
+	public int getFocusedMidiChannel() {
+		return focusedMidiChannel;
+	}
+	
+	public void setFocusedMidiChannel(int ch) {
+		if (ch < 0 || ch >= mChannels.length) throw new RuntimeException("Channel no. is out of range.");
+		focusedMidiChannel = ch;
+	}
+	
 	//TODO (DONE) implement save / load later
 	//TODO (DONE) modify the column rectangle and how it moves on keytyped -- notate in place THEN move forward, and
 	//     also have the rectangle default to the first cell whenever a new measure is focused, as well as
@@ -1392,23 +1507,89 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) getAllNotesInColumn() should be renamed to getAllPitchesInColumn, and a separate method by the former name
 	//     should be created that returns an arraylist of note objects
 	
-	//TODO edit CustomFunctions class to gather other information about the note such as mute? melody? etc.
 	
+	//Update as of 4.19
+	//TODO (DONE) Create CustomFunctions class (will become API for end user)
+	//TODO (DONE) create CustomFunctions pane, a GUI for displaying all the user-created functions
+	//TODO (DONE) create initial helper methods in CustomFunctions
+	//TODO (DONE) edit CustomFunctions class to gather other information about the note such as mute? melody? etc.
+	//TODO (DONE) Create a hashmap that binds indices or Strings to the user-editable functions themselves,
+	//            so that they can be invoked directly from the GUI
+	//TODO (DONE) allow menu access of CustomFunctions pane from PianoRollGUI
+	//TODO (DONE) Create SuperCustomFunctions class (superclass for CustomFunctions), needed for dynamic reloading
+	//            of CustomFunctions class without restarting the entire program
+	//            (See CustomFunctionsPane's reload() method and comments therein for more info)
+	//TODO (DONE) Allow for dynamic reloading of CustomFunctions, as mentioned above.
+	
+	
+	//Update as of 4.25.2018
+	//TODO (DONE) deal with colorintmap's two different color maps. Kind of confusing right now.
+	//TODO (DONE) create focusedMidiChannel variable, for real-time playback instrument while notating with keyboard or mouse
+	//TODO (DONE) make up a changeAllInstruments() method that sets ALL channels to a specified instrument
+	//TODO (DONE) change instrument method should also be modified to change a specific mchannels[i] value
+	//TODO (DONE) edit save / load so that it now saves 16 instruments in all the midi channels, instead of 1 instrument
+	//TODO (DONE) midi_instrument variable should now be changed to array of 16 instruments (midiInstrumentArr)
+	//TODO (DONE) Infopane should be updated to reflect that we now have an array of 16 instruments, one per channel
+	//TODO (DONE) in Infopane, clicking on the listview of channel updates the current focused midi channel
+	//TODO (DONE) when changing instruments using menu (not using custom API), the instruments should be set to same for all channels
+	//TODO (DONE) each note (Note and RectangleNote) class should have attribute var re: the midi channel it belongs to,
+	//			  not the instrument
+	//TODO (DONE) consider allowing separate volume and /or instrumentation for individual notes (edit RectangleNote & either WrapperNote or Note classes)
+	//TODO (DONE) Make it possible to edit each note's volume / midi channel in custom functions class
+	//TODO (DONE) when selecting a note, play the sound according to the instrument channel the note belongs to
+	//TODO (DONE) when playing (notating) a note via mouse or keyboard, play sound according to the instrument channel
+	//            which is currently focused (focusedMidiChannel variable in this class)
+	//TODO (DONE) make it possible to auto-loop once playback reaches the end
+	//TODO (DONE) enable toggling auto-loop on or off during playback
+	//TODO (DONE) the concepts of "locked" melody and explicit mute function for notes are now gone, as it presents
+	//            too much unnecessary complication re: coloring and what notes can be edited when and how.
+	//            now, the only special color is BLACK, to indicate "selected" notes. But now any note is editable,
+	//            and any color can be set to indicate "melody" or otherwise. As for muting, setMute() is gone. Instead,
+	//            we can just use setVolume() method to set a note to 0 volume. We still have isMute() method
+	//            to check to see if a note has 0 volume.
+	//TODO (DONE) add checkbox to the melody/chord mode menuitem
+	//TODO (DONE) improve the createNote() and createRect() method for efficiency in ScorePane
+	//TODO (DONE) minor edit to resetAllCopyRelatedVars() method in ScorePane
+	//TODO (DONE) After selecting and dragging a note, the notes' channel defaults to whatever is currently the focused channel,
+	//            despite the fact the notes were originally assigned a different channel. Fix this.
+	//TODO (DONE) change instrument pane should now allow for one or all channels to be assigned the selected instrument
+	//TODO (DONE) make it possible to assign different channel to selected notes using menuoptions:
+	//            by clicking on the channel listview in infopane while having notes selected.
+	//TODO (DONE) upon selecting a channel in the infopane, keep that channel selected upon refreshing the infopane
+	//TODO (DONE) experiment with instrument changes
+	//TODO (DONE) set max. number of columns in a given score (for purposes of setting limits on the bitset 
+	//            representation of notefeatures, and to ensure we set aside enough no. of bits for the representation of
+	//            things like note length, not to exceed the max. number of columns)
+	//TODO (DONE) edit note insert, and column insert methods in the menu, to ensure we can't go above max. number of columns in any case
+	//            (we want to set arbitrary limit on how long a score can get, and ensure no method breaks this limit)
+	//TODO (DONE) implement bitset representation of note features in a new BitSetUtil class and test the methods
+	//TODO (DONE) complete setVolumeGivenColIndexRange() method in custom functions class, maybe after
+	//     implementing the bitset representation of note features
+	//TODO (DONE) make up a short looping piece and experiment with volume changes
+	//TODO (DONE) Test & make sure we can save/load properly with all new note information (instrument channel, colors, volume...)
+	//TODO (DONE) clean up CustomFunctions, divide into 3 sections: 
+	//            1) template for GUI display, 2) custom functions, 3) utility functions
+	//TODO (DONE) Make it possible to construct NoteFeatures either from RectangleNote or BitSet, and to
+	//            convert from features to bitset and vice versa, and also to be represented in binaryString format.
+	//TODO (DONE) implement some mod functions into NoteFeatures constructor with BitSet as parameter, to protect
+	//            as much as possible from creating invalid notes
+	//            (e.g. notes that are out of column range, have color values that are out of ColorIntMap's valid range...)
+	
+	//TODO make up custom (utility) function for notating a note given a bitset
+	//TODO experiment with doing some bit operations between notes or on a single note, and notate it on scorepane 
+	
+	//TODO readme file for customfunctions
+	 
 	
 	//TODO whenever they're 4 notes played together, color code them depending on what type of chord it is (minor, major, etc.)
 	//TODO for above, also depending on key signature, based on rhythm, tonality
-	
 	//TODO then, use the above to change / modify / delete / insert some notes
 	//     e.g. whenever there are 2 minor chords in a row, change the 2nd chord to a major?
-	
 	//TODO e.g. a pane in which user can type in some syntax, change notes' color accordingly
 	//TODO color by a sequence of rules
 	//For every value of some variable T, given a 2D array of colors, we can think of inserting and/or coloring
 	//TODO T = time (columns), F = frequency, or color of notes
 	
-	//TODO have an API (file) that end user can change
-	//e.g. inverting everything
-	//e.g. pattern search for transpositions
 	//TODO once a user searches / filters out a subset of a given score, the result should be saved as a separate visual
 	
 	//TODO pattern search (implement similarity measures and/or transpositions, not just exact match)
@@ -1469,26 +1650,47 @@ public class PianoRollGUI extends Application {
 		}		 
 	}
 	
-	public String getInstrument() {
-		return this.instrumentArr[this.midi_instrument].toString();
+	public String getInstrument(int channel) {
+		return this.instrumentArr[this.midiInstrumentArr[channel]].toString();
 	}
 	
-	public int getInstrumentInt() {
-		return this.midi_instrument;
+	public int getInstrumentInt(int channel) {
+		return this.midiInstrumentArr[channel];
 	}
 	
 	public Instrument[] getInstrumentArr() {
 		return this.instrumentArr;
 	}
 	
+	public int getNumMidiInstruments() {
+		return this.instrumentArr.length;
+	}
+	
+	public int getNumMidiInstrumentChannels() {
+		return this.midiInstrumentArr.length;
+	}
+	
+	/**
+	 * Return the i-th midi instrument value (int value)
+	 * @param i
+	 * @return
+	 */
+	public int getMidiInstrumentInt(int i) {
+		return this.midiInstrumentArr[i];
+	}
+	
 	public void playSound(int pitch) {
-		mChannels[0].noteOn(pitch, 120);//play note number with specified volume 
+		playSound(pitch, this.focusedMidiChannel);
+	}
+	
+	public void playSound(int pitch, int channel) {
+		mChannels[channel].noteOn(pitch, 120);//play note number with specified volume 
 		try { 
 			Thread.sleep(100); // wait time in milliseconds to control duration
 		} catch (InterruptedException ie) {
 
 		}
-		mChannels[0].noteOff(pitch);//turn off the note
+		mChannels[channel].noteOff(pitch);//turn off the note
 	}
 	
 	public void goToNextOrPrevMeasure(boolean nextMeasure, boolean setColIndexToZero) {
@@ -1508,17 +1710,33 @@ public class PianoRollGUI extends Application {
 	}
 	
 	public void updateInfoPane() {
-		this.infopane.update();
+		this.infopane.update(this.focusedMidiChannel);
 	}
 	
 	public int getNumColsPerSubMeasure() {
 		return this.focusedScorePane.getColsPerMeasure();
 	}
 	
+	//Set all (16) midi channels
+	public void changeAllInstruments(int[] instruments) {
+		for (int i = 0; i < mChannels.length; ++i) {
+			this.changeInstrument(instruments[i], i);
+		}
+	}
+	
+	public void changeAllInstruments(int instrument) {
+		for (int i = 0; i < mChannels.length; ++i) {
+			this.changeInstrument(instrument, i);
+		}
+	}
+	
 	public void changeInstrument(int instrument) {
-		mChannels[0].programChange(instrument);
-//		midiSynth.loadInstrument(instrumentArr[instrument]);
-		this.midi_instrument = instrument;
+		this.changeInstrument(instrument, focusedMidiChannel);
+	}
+	
+	public void changeInstrument(int instr, int midichannel) {
+		mChannels[midichannel].programChange(instr);
+		this.midiInstrumentArr[midichannel] = instr;
 		updateInfoPane();
 	}
 	
@@ -1612,6 +1830,7 @@ public class PianoRollGUI extends Application {
 		this.measuresHB.getChildren().addAll(measurePaneAL);
 	}
 	
+	//Deprecated
 	private void linkMeasures(int i) {
 		ScorePane curr = this.measurePaneAL.get(i);
 		if (i > 0) {
@@ -1622,7 +1841,7 @@ public class PianoRollGUI extends Application {
 			curr.setPrev(null);
 			curr.setNext(null);
 		}
-		curr.setMeasureNum(i);
+//		curr.setMeasureNum(i);
 	}
 	
 	/**
@@ -1704,9 +1923,9 @@ public class PianoRollGUI extends Application {
 		
 		//If we're currently in chord builder mode, the melody notes are locked and unable to be edited.
 		//So temporarily unlock melody notes to allow for transposition. We'll lock them at the end of this method.
-		if (chordBuilderMode) {
-			this.lockMelodyNotes(false);
-		}
+//		if (chordBuilderMode) {
+//			this.lockMelodyNotes(false);
+//		}
 		if (transposeUp) {
 			for (int i = 0; i < ScorePane.ROWS; ++i) {
 				transposeNotes(i, from, to, semitones);
@@ -1719,9 +1938,9 @@ public class PianoRollGUI extends Application {
 		} //end if/else
 		
 		//Lock up the melody notes after transposition if needed
-		if (chordBuilderMode) {
-			this.lockMelodyNotes(true);
-		}
+//		if (chordBuilderMode) {
+//			this.lockMelodyNotes(true);
+//		}
 	} //end public void transpose
 	
 	/**
@@ -1740,7 +1959,8 @@ public class PianoRollGUI extends Application {
 			wn.setPitch(wn.getPitch() + semitones);
 			//Ensure transposed pitch is within the legal pitch range, and if so, notate it
 			if (wn.getPitch() >= MIN_PITCH && wn.getPitch() <= MAX_PITCH) {
-				focusedScorePane.createNote(wn, wn.getColIdx(), 1, false);
+//				focusedScorePane.createNote(wn, wn.getColIdx(), 1, false);
+				focusedScorePane.createNote(wn, false);
 			}
 		} //end for WrapperNote
 	}
@@ -1750,12 +1970,21 @@ public class PianoRollGUI extends Application {
 	}
 	
 	public void insertCells(int nColsToAdd, int startingAtCol, boolean addBeforeCol, ArrayList<WrapperNote> al) {
+		//First make sure that inserting these many columns would NOT result in exceeding the max. allowed columns.
+		int newNumCol = this.getTotalCols() + nColsToAdd;
+		if (newNumCol > ScorePane.MAX_CELLS) {
+			this.focusedScorePane.throwErrorAlertDialog("Abort", 
+					String.format("This would cause the number of cells to exceed the max. allowed (%s). Command canceled.",
+					ScorePane.MAX_CELLS));
+			return;
+		}
+		
 		//Begin by saving the current canvas to a tmp file, except that every note that begins
 		//on a column >= or > the startingAtCol variable (depennding on the boolean parameter)
 		//is going to be offset by the no. of columns to be added
 		//Afterward, populate it with the new column number
 
-		int newNumCol = this.getTotalCols() + nColsToAdd;
+		
 		File file = new File("~tmpsave.TMP");
 
 		//Save current canvas to file, pursuant to the comments above
@@ -1781,24 +2010,28 @@ public class PianoRollGUI extends Application {
 			//					writer.println(focusedScorePane.getNumCells());
 			writer.println(newNumCol);
 			writer.println(this.ks.getTonic() + " " + this.ks.getMode());
-			writer.println(this.midi_instrument);
+//			writer.println(this.midi_instrument);
+			for (int i = 0; i < this.midiInstrumentArr.length; ++i) {
+				writer.print(this.midiInstrumentArr[i] + " ");
+			}
+			writer.println();
 			writer.println(this.chordBuilderMode ? 1 : 0);
 			writer.println(this.focusedScorePane.getColsPerMeasure() + " " + this.focusedScorePane.getOffset());
 			writer.println(this.focusedScorePane.getWidthPerCell() + " " + this.focusedScorePane.getHeightPerCell());
 			for (WrapperNote n : noteAL) {
 				if (n.getColIdx() >= (addBeforeCol ? startingAtCol : startingAtCol + 1)) {
 					writer.println(n.getPitch() + " " + n.getDuration() + " " + (n.getColIdx() + nColsToAdd) +
-							" " + n.getColorInt() + " " + n.getOrigColorInt());
+							" " + n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 				} else {
 					writer.println(n.getPitch() + " " + n.getDuration() + " " + n.getColIdx() + " " +
-							n.getColorInt() + " " + n.getOrigColorInt());
+							n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 				}
 			}
 
 			if (al != null) {
 				for (WrapperNote n : al) {
 					writer.println(n.getPitch() + " " + n.getDuration() + " " + n.getColIdx() + " " +
-							n.getColorInt() + " " + n.getOrigColorInt());
+							n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 				}
 			}
 			writer.close();
@@ -1848,23 +2081,31 @@ public class PianoRollGUI extends Application {
         int tempo = PianoRollGUI.this.getTempo();
         PrintWriter writer;
 		try {
+			
+			
+			
+			
 			writer = new PrintWriter(file, "UTF-8");
 			writer.println(durationPerCell);
 			writer.println(tempo);
 //			writer.println(focusedScorePane.getNumCells());
 			writer.println(newNumCol);
 			writer.println(this.ks.getTonic() + " " + this.ks.getMode());
-			writer.println(this.midi_instrument);
+//			writer.println(this.midi_instrument);
+			for (int i = 0; i < this.midiInstrumentArr.length; ++i) {
+				writer.print(this.midiInstrumentArr[i] + " ");
+			}
+			writer.println();
 			writer.println(this.chordBuilderMode ? 1 : 0);
 			writer.println(this.focusedScorePane.getColsPerMeasure() + " " + this.focusedScorePane.getOffset());
 			writer.println(focusedScorePane.getWidthPerCell() + " " + this.focusedScorePane.getHeightPerCell());
 			for (WrapperNote n : noteAL) {
 				if (n.getColIdx() >= to) {
 					writer.println(n.getPitch() + " " + n.getDuration() + " " + (n.getColIdx() - nColsToDelete) + " " + 
-									n.getColorInt() + " " + n.getOrigColorInt());
+									n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 				} else {
 					writer.println(n.getPitch() + " " + n.getDuration() + " " + n.getColIdx() + " " 
-								+ n.getColorInt() + " " + n.getOrigColorInt());
+								+ n.getColorInt() + " " + n.getOrigColorInt() + " " + n.getVolume() + " " + n.getChannel());
 				}
 			}
             writer.close();
@@ -1885,6 +2126,9 @@ public class PianoRollGUI extends Application {
 		return !(toA < fromB || fromA > toB);
 	}
 	
+	private void setMelodyChordModeCB(boolean b) {
+		melodyChordModeCB.setSelected(b);
+	}
 	
 	public int getFocusedMeasureNum() {
 		if (this.focusedScorePane == null)
@@ -1898,8 +2142,25 @@ public class PianoRollGUI extends Application {
 	public int getTotalNumPitches() {
 		return TOTAL_NUM_PITCHES;
 	}
+	public boolean isAutoLoop() {
+		return isAutoLoop;
+	}
+
+	public void setAutoLoop(boolean isAutoLoop) {
+		this.isAutoLoop = isAutoLoop;
+		autoLoopChkBox.setSelected(isAutoLoop);
+		
+	}
+	
+	public void setMidiChannelForSelectedNotes(int channel) {
+		HashSet<RectangleNote> selectedRnHS = this.focusedScorePane.getAllSelectedNotes();
+		for (RectangleNote rn : selectedRnHS) {
+			rn.setChannel(channel);
+		}
+	}
 	
 	public static void main(String[] args) throws Exception {
+		ColorIntMap.getIntToRGBArr();  //initialize the color map just in case
 		Application.launch(args);
 	}
 }

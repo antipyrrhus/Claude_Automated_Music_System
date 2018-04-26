@@ -2,6 +2,5 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="D:/Dropbox/Dropbox/-=EDU/GATech-MS route/2018 Spring/8903 - Special Topics/Claude/jfugue-5.0.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
