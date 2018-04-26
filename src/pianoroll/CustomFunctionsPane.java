@@ -40,8 +40,6 @@ public class CustomFunctionsPane extends BorderPane{
 		} catch(Exception ex) {
 			ex.printStackTrace();
 		}
-				
-		
 	}
 	
 	/**

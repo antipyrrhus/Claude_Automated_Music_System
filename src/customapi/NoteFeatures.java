@@ -8,6 +8,7 @@ import pianoroll.*;
 
 public class NoteFeatures {
 	private int colStartIdx, rowIdx, duration, pitchVal, midiChannel, volume, numAllowedCols;
+	private int stencilBits; //16 bits TODO
 	private Color color;
 	private boolean noteIsNull;
 	private static int  bitsForNullNoteOrNot, bitsForColStartIdx,bitsForRowIdx,bitsForDuration,

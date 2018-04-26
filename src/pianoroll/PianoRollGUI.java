@@ -1522,31 +1522,36 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) Allow for dynamic reloading of CustomFunctions, as mentioned above.
 	
 	
-	//Update as of 4.25.2018
+	//Update as of 4.26.2018
 	//TODO (DONE) deal with colorintmap's two different color maps. Kind of confusing right now.
 	//TODO (DONE) create focusedMidiChannel variable, for real-time playback instrument while notating with keyboard or mouse
 	//TODO (DONE) make up a changeAllInstruments() method that sets ALL channels to a specified instrument
 	//TODO (DONE) change instrument method should also be modified to change a specific mchannels[i] value
-	//TODO (DONE) edit save / load so that it now saves 16 instruments in all the midi channels, instead of 1 instrument
-	//TODO (DONE) midi_instrument variable should now be changed to array of 16 instruments (midiInstrumentArr)
+	
 	//TODO (DONE) Infopane should be updated to reflect that we now have an array of 16 instruments, one per channel
-	//TODO (DONE) in Infopane, clicking on the listview of channel updates the current focused midi channel
-	//TODO (DONE) when changing instruments using menu (not using custom API), the instruments should be set to same for all channels
+	//TODO (DONE) edit save / load so that it now saves 16 instruments in all the midi channels, instead of 1 instrument
 	//TODO (DONE) each note (Note and RectangleNote) class should have attribute var re: the midi channel it belongs to,
 	//			  not the instrument
-	//TODO (DONE) consider allowing separate volume and /or instrumentation for individual notes (edit RectangleNote & either WrapperNote or Note classes)
 	//TODO (DONE) Make it possible to edit each note's volume / midi channel in custom functions class
-	//TODO (DONE) when selecting a note, play the sound according to the instrument channel the note belongs to
-	//TODO (DONE) when playing (notating) a note via mouse or keyboard, play sound according to the instrument channel
-	//            which is currently focused (focusedMidiChannel variable in this class)
-	//TODO (DONE) make it possible to auto-loop once playback reaches the end
-	//TODO (DONE) enable toggling auto-loop on or off during playback
+	//TODO (DONE) MAKE IT POSSIBLE TO AUTO-LOOP ONCE PLAYBACK REACHES THE END
 	//TODO (DONE) the concepts of "locked" melody and explicit mute function for notes are now gone, as it presents
 	//            too much unnecessary complication re: coloring and what notes can be edited when and how.
 	//            now, the only special color is BLACK, to indicate "selected" notes. But now any note is editable,
 	//            and any color can be set to indicate "melody" or otherwise. As for muting, setMute() is gone. Instead,
 	//            we can just use setVolume() method to set a note to 0 volume. We still have isMute() method
-	//            to check to see if a note has 0 volume.
+	//            to check to see if a note has 0 volume.	
+	//TODO (DONE) clean up CustomFunctions, divide into 3 sections: 
+	//            1) template for GUI display, 2) custom functions, 3) utility functions
+	
+	//TODO (DONE) midi_instrument variable should now be changed to array of 16 instruments (midiInstrumentArr)
+	//TODO (DONE) in Infopane, clicking on the listview of channel updates the current focused midi channel	
+	//TODO (DONE) consider allowing separate volume and /or instrumentation for individual notes (edit RectangleNote & either WrapperNote or Note classes)
+	//TODO (DONE) when selecting a note, play the sound according to the instrument channel the note belongs to
+	//TODO (DONE) when playing (notating) a note via mouse or keyboard, play sound according to the instrument channel
+	//            which is currently focused (focusedMidiChannel variable in this class)
+	//TODO (DONE) enable toggling auto-loop on or off during playback
+	//TODO (DONE) implement bitset representation of note features in a new BitSetUtil class and test the methods
+	
 	//TODO (DONE) add checkbox to the melody/chord mode menuitem
 	//TODO (DONE) improve the createNote() and createRect() method for efficiency in ScorePane
 	//TODO (DONE) minor edit to resetAllCopyRelatedVars() method in ScorePane
@@ -1562,23 +1567,47 @@ public class PianoRollGUI extends Application {
 	//            things like note length, not to exceed the max. number of columns)
 	//TODO (DONE) edit note insert, and column insert methods in the menu, to ensure we can't go above max. number of columns in any case
 	//            (we want to set arbitrary limit on how long a score can get, and ensure no method breaks this limit)
-	//TODO (DONE) implement bitset representation of note features in a new BitSetUtil class and test the methods
 	//TODO (DONE) complete setVolumeGivenColIndexRange() method in custom functions class, maybe after
 	//     implementing the bitset representation of note features
 	//TODO (DONE) make up a short looping piece and experiment with volume changes
 	//TODO (DONE) Test & make sure we can save/load properly with all new note information (instrument channel, colors, volume...)
-	//TODO (DONE) clean up CustomFunctions, divide into 3 sections: 
-	//            1) template for GUI display, 2) custom functions, 3) utility functions
 	//TODO (DONE) Make it possible to construct NoteFeatures either from RectangleNote or BitSet, and to
 	//            convert from features to bitset and vice versa, and also to be represented in binaryString format.
 	//TODO (DONE) implement some mod functions into NoteFeatures constructor with BitSet as parameter, to protect
 	//            as much as possible from creating invalid notes
 	//            (e.g. notes that are out of column range, have color values that are out of ColorIntMap's valid range...)
+	//TODO (DONE) make up custom (utility) function for notating a note given a bitset
+	//TODO (DONE) readme file for customfunctions
 	
-	//TODO make up custom (utility) function for notating a note given a bitset
+	//TODO consider editing NoteFeatures such that each indiivudal attribute is saved as its own bitset file.
+	//     this might make it easier to perform bit operations only using the attributes you want to change,
+	//     while leaving other attributes you might not want to change intact (e.g. col index, duration...)
+	
+
+	//TODO Todo list of features and metohds
+	//TODO Features of a particular note by (c,r)
+	//TODO Each of these features has a read/write function, as follows…
+	//TODO Tutorial video
+	//TODO stencilBits for NoteFeatures, set/write
+	//TODO tutorial on how to access individual bits in a int attribute like stencilbits
+	//TODO ex. Show how to change color of all notes for which stencilbit index 3 == 1, turn it green
+	//TODO functionality to save to defaultcustomfunctions and load from it in event of a catastrophe
+	//TODO expeirment with converting individual packages to jars except for custom functions class
+	//TODO consider using code re: command line build of custom functions, another thread 
+	//TODO button in the custom pane for building from source
+	//TODO button for save/load, implement it in custom pane and link the function to supercustom
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//TODO experiment with doing some bit operations between notes or on a single note, and notate it on scorepane 
-	
-	//TODO readme file for customfunctions
 	 
 	
 	//TODO whenever they're 4 notes played together, color code them depending on what type of chord it is (minor, major, etc.)
