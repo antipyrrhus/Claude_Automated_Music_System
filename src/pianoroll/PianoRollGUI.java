@@ -15,8 +15,8 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Soundbank;
-import javax.sound.midi.SoundbankResource;
+//import javax.sound.midi.Soundbank;
+//import javax.sound.midi.SoundbankResource;
 import javax.sound.midi.Synthesizer;
 
 import convertmidi.MidiFile;
@@ -486,17 +486,17 @@ public class PianoRollGUI extends Application {
         	focusedScorePane.muteSelectedNotes(false);
         });
         
-        //Update: disable this for now. Color note scheme is kind of a mess and we don't want to designate a special color for melody right now
-//        this.melodyChordModeCB = new CheckBox();
-//        setMelodyChordModeCB(this.chordBuilderMode);
-//        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Chord Mode (currently disabled)", melodyChordModeCB);
-//        toggleMelodyChordMode.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SLASH));
-//        toggleMelodyChordMode.setOnAction(e -> {
-//        	this.chordBuilderMode = !this.chordBuilderMode;
-//        	this.setMelodyChordModeCB(this.chordBuilderMode);
-////        	lockMelodyNotes(chordBuilderMode);
-//        	updateInfoPane();
-//        });
+        //Update: disable the locking mechanism for now.
+        this.melodyChordModeCB = new CheckBox();
+        setMelodyChordModeCB(this.chordBuilderMode);
+        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Chord Mode (currently disabled)", melodyChordModeCB);
+        toggleMelodyChordMode.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SLASH));
+        toggleMelodyChordMode.setOnAction(e -> {
+        	this.chordBuilderMode = !this.chordBuilderMode;
+        	this.setMelodyChordModeCB(this.chordBuilderMode);
+//        	lockMelodyNotes(chordBuilderMode);
+        	updateInfoPane();
+        });
         MenuItem raiseOctave = new MenuItem("Raise Octave");
         raiseOctave.setAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN));
         raiseOctave.setOnAction(e -> {
@@ -686,7 +686,7 @@ public class PianoRollGUI extends Application {
 
         menuEdit.getItems().addAll(selectAll, copySelected, cutSelected, pasteSelected, insertSelected,
         		findNextSelectedPattern, muteSelectedNotes, unmuteSelectedNotes,
-//        		toggleMelodyChordMode, 
+        		toggleMelodyChordMode, 
         		raiseOctave, lowerOctave, nextCol, prevCol, 
         		backSpace, deleteNotesInColumn, deleteSelectedNotes, deleteAllNotesInMeasure, 
         		changeKS, changeTempo, increaseTempo, decreaseTempo, 
@@ -1334,18 +1334,25 @@ public class PianoRollGUI extends Application {
 		public void handle(KeyEvent k) {
 //			System.out.println(k.getCode().toString());			
 //			System.out.println(PITCH_MAP.get("Z") + Harmonizer.SCALE * octave);
+			
 			if (k.getCode().isDigitKey()) {
 				System.out.println(k.getCode().getName());
 				if (k.getCode().getName().startsWith("Numpad")) return; //numpad digits will be disabled from changing note color
-				try {
-					focusedScorePane.colorSelectedNotes(Integer.parseInt(k.getCode().getName()));
-				} catch (NumberFormatException nfe) {
-					nfe.printStackTrace();
+				
+				//UPDATE: only allow user to reset note to default color, not any other colors
+				if (Integer.parseInt(k.getCode().getName()) == ColorEnum.DEFAULT.getColorInt()) {
+					try {
+						focusedScorePane.colorSelectedNotes(ColorEnum.DEFAULT.getColorInt());
+					} catch (NumberFormatException nfe) {
+						nfe.printStackTrace();
+					}
 				}
+				
 			} else if (k.getCode() == KeyCode.MINUS) {
-				focusedScorePane.colorSelectedNotes(10);
+				//UPDATE: these other colors are disabled.
+//				focusedScorePane.colorSelectedNotes(10);
 			} else if (k.getCode() == KeyCode.EQUALS) {
-				focusedScorePane.colorSelectedNotes(11);
+//				focusedScorePane.colorSelectedNotes(11);
 			}
 //			if (k.getCode() == KeyCode.SHIFT) {
 //				octave += 1;
@@ -1620,6 +1627,12 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) make up a function that composes a random dance track with multiple instruments
 	
 	//TODO (DONE) create a ColorEnum class for binding certain "special" colors for notes, such as GRAY for mute
+	
+	//TODO trying to phase out ColorIntMap for setting custom colors programmatically. It conflicts too much with special colors
+	//     and generally leads to chaos and confusion.
+	//     At the moment ColorIntMap only contains the "special" colors as defined in ColorEnum
+	//     Eventually we need to either abandon ColorIntMap or come up with a better, less confusing way of
+	//     allowing users to customize color
 	
 	//TODO there is no UI option for the end user to set note volume (other than mute/unmute)
 	

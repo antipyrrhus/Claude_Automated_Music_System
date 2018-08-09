@@ -11,7 +11,8 @@ public class WrapperNote extends Note {
 		super(pitch);
 		this.isNoteOff = false;
 //		this.colorInt = ColorIntMap.colorHashMap.get(Color.GREEN);
-		this.colorInt = ColorIntMap.rgbHashMap.get(Color.GREEN);
+//		this.colorInt = ColorIntMap.rgbHashMap.get(Color.GREEN);
+		this.colorInt = ColorEnum.DEFAULT.getColorInt();
 	}
 	
 	public WrapperNote(Note n, int colIdx) {

@@ -26,7 +26,8 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 //		this.rowIdx = (int)Math.round(y / heightPerCell);
 		this.rowIdx = rowIdx;
 		System.out.printf("Created new RectagleNote with startIdx %s and length %s\n", startIdx, length);
-		color = Color.GREEN;
+//		color = Color.GREEN;
+		color = ColorEnum.DEFAULT.getColor();
 		origColor = color;
 //		isMelody = false;
 //		isMute = false;
@@ -118,7 +119,7 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 //			return;
 //		}
 		this.isSelected = selected;
-		color = selected ? Color.BLACK : origColor;
+		color = selected ? ColorEnum.SELECTED.getColor() : this.isMute() ? ColorEnum.MUTE.getColor() : origColor;
 		this.setFill(color);
 
 	}
@@ -135,13 +136,17 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 		if (mute) {
 			this.volume = 0;
 //			color = ColorIntMap.intToRGBArr[GREY_IDX];
+			color = ColorEnum.MUTE.getColor();
+			int tmpDebugCheckColor = ColorEnum.MUTE.getColorInt();
+			System.out.println(tmpDebugCheckColor);
 		} else {
-			if (this.origVolume == 0) this.origVolume = MidiFile.MAX_VOL;
+//			if (this.origVolume == 0) this.origVolume = MidiFile.MAX_VOL;
 			this.volume = this.origVolume;
+			color = origColor;
 		}
+		this.setColor(color);
 //		else if (this.isMelody) color = Color.DARKRED;
-//		else color = origColor;
-//		this.setFill(color);
+		
 	}
 
 	public boolean isMute() {
@@ -150,23 +155,31 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 	}
 	//User-defined color setting
 	public void setColor(int c) {
-		setColor(ColorIntMap.intToRGBArr[c]);	
+		if (c < 0 || c >= ColorEnum.numOfSpecialColors) throw new RuntimeException();
+		setColor(ColorIntMap.intToRGBArr[c]);
 	}
 	
 	public void setColor(Color c) {
 //		if (this.isMelody) return;
 		this.color = c;
 		this.setFill(color);
-		if (c == Color.BLACK) {
+		if (c == ColorEnum.SELECTED.getColor()) {
 			this.isSelected = true;
 		}
 //		else if (c == Color.DARKRED) {
 //			this.isMelody = true;
 //			this.isSelected = false;
-//		} else if (c == Color.GREY) {
-//			this.isMute = true;
-//			this.isSelected = false;
 //		}
+		else if (c == ColorEnum.MUTE.getColor()) {
+//			this.isMute = true;
+			this.isSelected = false;
+		}
+		else if (c == ColorEnum.DEFAULT.getColor()) {
+			//TODO?
+		}
+		else if (c == ColorEnum.LOCKED.getColor()) {
+			//TODO?
+		}
 		else {
 			this.origColor = color;
 		}

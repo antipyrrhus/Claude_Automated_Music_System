@@ -215,9 +215,11 @@ public class ScorePane extends VBox {
 	    	Line ln = new Line(j*widthPerCell, 0, j*widthPerCell, ROWS * heightPerCell);
 	    	if (j % this.numCellsPerMeasure == this.measureOffset) {
 	    		ln.setStrokeWidth(2.5);
-	    		ln.setStroke(Color.BLACK);
+//	    		ln.setStroke(Color.BLACK);
+	    		ln.setStroke(ColorEnum.SELECTED.getColor());
 	    	} else {
-	    		ln.setStroke(Color.GRAY);
+//	    		ln.setStroke(Color.GRAY);
+	    		ln.setStroke(ColorEnum.MUTE.getColor());
 	    	}
 	    	pane.getChildren().add(ln);
 	    }
@@ -785,7 +787,7 @@ public class ScorePane extends VBox {
 		if (rn == null) {
 			//create new note of length 1, then color it
 			rn = new RectangleNote(col * this.widthPerCell, row * this.heightPerCell, this.widthPerCell, this.heightPerCell,
-					col, row, 1, false, Color.GREEN, Color.GREEN, rectIndex, 
+					col, row, 1, false, ColorEnum.DEFAULT.getColor(), ColorEnum.DEFAULT.getColor(), rectIndex, 
 					pianoRollGUI.getFocusedMidiChannel(), MidiFile.MAX_VOL);
 			this.pane.getChildren().add(rn);
 			this.rectArr[rectIndex] = rn;
@@ -802,7 +804,7 @@ public class ScorePane extends VBox {
 		if (rn == null) {
 			//create new note of length 1, then color it
 			rn = new RectangleNote(col * this.widthPerCell, row * this.heightPerCell, this.widthPerCell, this.heightPerCell,
-					col, row, 1, false, Color.GREEN, Color.GREEN, rectIndex,
+					col, row, 1, false, ColorEnum.DEFAULT.getColor(), ColorEnum.DEFAULT.getColor(), rectIndex,
 					pianoRollGUI.getFocusedMidiChannel(), MidiFile.MAX_VOL);
 			this.pane.getChildren().add(rn);
 			this.rectArr[rectIndex] = rn;
@@ -859,8 +861,8 @@ public class ScorePane extends VBox {
 	
 	private void muteSelectedNotes(HashSet<RectangleNote> rnHS, boolean mute) {
 		for (RectangleNote rn : rnHS) {
-			rn.setMute(mute);
 			rn.setSelected(false);
+			rn.setMute(mute);
 		}
 	}
 	
@@ -1071,7 +1073,8 @@ public class ScorePane extends VBox {
 		int rectArrIndex = this.convertTo1DCoord(rowIdx, colIdx);
 		this.createRect(colIdx, widthPerCell, rowIdx, heightPerCell,
 				pane, rectArr, rectArrIndex, wn.getDuration(), false, false,
-				ColorIntMap.intToRGBArr[wn.getColorInt()], ColorIntMap.intToRGBArr[wn.getOrigColorInt()],
+				ColorEnum.DEFAULT.getColor(),ColorEnum.DEFAULT.getColor(),
+//				ColorIntMap.intToRGBArr[wn.getColorInt()], ColorIntMap.intToRGBArr[wn.getOrigColorInt()],
 				wn.getChannel(), wn.getVolume());
 		if (playback) this.play(wn.getPitch(), wn.getChannel(), true);
 	}
@@ -1263,7 +1266,7 @@ public class ScorePane extends VBox {
 	private void createRect(int colIndex, double widthPerCell, int rowIndex, double heightPerCell, Pane pane, 
 			RectangleNote[] rectArr, int rectArrIndex, int length, boolean createColRectangle) {
 		createRect(colIndex, widthPerCell, rowIndex, heightPerCell, pane, rectArr, rectArrIndex, length, createColRectangle,
-				false, Color.GREEN, Color.GREEN);
+				false, ColorEnum.DEFAULT.getColor(), ColorEnum.DEFAULT.getColor());
 	}
 	
 	private void createRect(int colIndex, double widthPerCell, int rowIndex, double heightPerCell, Pane pane, 
