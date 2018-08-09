@@ -168,9 +168,13 @@ public class InfoPane extends BorderPane {
 			
 			String curr_instr = pianoRollGUI.getInstrument(i);
 			int curr_instr_num = pianoRollGUI.getInstrumentInt(i);
-			instrument_lbl_val_lv.getItems().add("Channel " + i + ": " + curr_instr.substring(
+			if (i == PianoRollGUI.RESERVED_DRUM_INSTRUMENT_MIDI_INDEX) {
+				instrument_lbl_val_lv.getItems().add("Channel "+  i + " : Reserved (drum kit)");
+			} else {
+				instrument_lbl_val_lv.getItems().add("Channel " + i + ": " + curr_instr.substring(
 					"Instrument: ".length(), curr_instr.indexOf("bank #")) + 
 					" " + "(" + curr_instr_num + ")");
+			}
 		}
 	}
 	public void disableBtns(boolean isPlaying) {

@@ -812,6 +812,13 @@ public class ScorePane extends VBox {
 		if (rn.getColor() == color) return true;
 		return false;
 	}
+	
+	public void startPlayBack() {
+		pianoRollGUI.playBack(false); //begin playback starting at current active column
+	}
+	public void stopPlayBack() {
+		pianoRollGUI.stopPlayback();
+	}
 	public int getMaxVol() {
 		return MidiFile.MAX_VOL;
 	}
@@ -1017,7 +1024,7 @@ public class ScorePane extends VBox {
 //		//Don't add this to screen. Just adds confusion.
 //	}
 	
-	private void deSelectAll() {
+	public void deSelectAll() {
 		for (RectangleNote rn : this.rectArr) {
 			if (rn == null || !rn.isSelected) continue;
 //			rn.setFill(rn.isMelody ? Color.DARKRED : Color.GREEN);
@@ -1468,7 +1475,7 @@ public class ScorePane extends VBox {
 		this.createRect(colIdx, this.widthPerCell, pitchRow, this.heightPerCell, this.pane, this.rectArr, rectArrIndex);
 	}
 	
-	private int computeRow(int pitch) {
+	public int computeRow(int pitch) {
 		//pitch = ROWS - row + MIN_PITCH
 		//row = ROWS - pitch + MIN_PITCH
 		return ROWS - pitch + PianoRollGUI.MIN_PITCH;
@@ -1617,7 +1624,12 @@ public class ScorePane extends VBox {
 		return retAL;
 	}
 	
-
+	public int getTempo() {
+		return this.pianoRollGUI.getTempo();
+	}
+	public void setTempo(int tempo) {
+		this.pianoRollGUI.setTempo(tempo);
+	}
 	
 //	private Note[] convertToNotes(ArrayList<Integer> pitchAL) {
 //		Note[] ret = new Note[pitchAL.size()];

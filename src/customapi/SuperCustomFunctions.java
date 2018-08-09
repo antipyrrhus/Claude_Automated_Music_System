@@ -24,26 +24,8 @@ public abstract class SuperCustomFunctions {
 	protected HashMap<String, Runnable> commandsHM;   //Maps the name of a method in this class to the actual executable function
 //	protected static final Color[] intToColorArr = ColorIntMap.intToColorArr; //Int to color map
 	private static final Color[] intToRGBArr = ColorIntMap.getIntToRGBArr(); //More robust RGB color map
+	private static final HashMap<Color, Integer> rgbHashMap = ColorIntMap.getRGBHashMap();
 	
-	protected ScorePane getScorePane() {
-		return scorePane;
-	}
-	
-	protected void registerCustomFunc(String str, int index, Runnable r, int type) {
-		this.commandsStrHM.put(index, str);
-		this.commandsHM.put(str.substring(0, str.indexOf("(")), r);
-	}
-
-	protected CustomFunctionsPane getCfp() {
-		return cfp;
-	}
-
-
-	protected static Color[] getInttorgbarr() {
-		return intToRGBArr;
-	}
-
-
 	/**
 	 * Constructor
 	 * @param scorePane
@@ -56,11 +38,6 @@ public abstract class SuperCustomFunctions {
 		this.commandsStrHM = new HashMap<>();
 	}
 	
-	
-	//These abstract methods are invoked from other classes (e.g. CustomFunctionsPane), and will automatically trigger
-	//the subclass (CustomFunctions)'s methods.
-//	public abstract String getCommandsStr(int i);
-//	public abstract void runCommand(String s);
 	
 	/**
 	 * Invoked by CustomFunctionsPane class. Once a user selects a function and inputs the correct list of parameters,
@@ -84,6 +61,24 @@ public abstract class SuperCustomFunctions {
 		return this.commandsStrHM.get(i);
 	}
 	
+	/**
+	 * Invoked by CustomFunctions subclass. Enables a custom function written by end user to be visible
+	 * and to be invoked using the Piano Roll GUI.
+	 * @param str Name of custom method signature
+	 * @param index the method index (for mapping purposes)
+	 * @param r Runnable, representing the method itself
+	 * @param type TODO currently not used. Placeholder for possible changes in the parameter types in the future.
+	 *             For right now, every parameter is an int type.
+	 */
+	protected void registerCustomFunc(String str, int index, Runnable r, int type) {
+		this.commandsStrHM.put(index, str);
+		this.commandsHM.put(str.substring(0, str.indexOf("(")), r);
+	}
+
+	protected static Color[] getIntToRGBArr() {
+		return intToRGBArr;
+	}
+
 	/**********************************************************************************************************************
 	 * -= Begin utility methods =-
 	 * 
@@ -122,6 +117,17 @@ public abstract class SuperCustomFunctions {
 		if (row < 0) row = this.getTotalNumOfRows() + row;
 		else if (row >= this.getTotalNumOfRows()) row = row - this.getTotalNumOfRows();
 		return row;
+	}
+	
+	/**
+	 * Clears the score pane of all notes
+	 */
+	protected void clearAll() {
+		for (int row = 0; row < this.getTotalNumOfRows(); ++row) {
+			for (int col = 0; col < this.getTotalNumOfCols(); ++col) {
+				this.setColor(col, row, -1);
+			}
+		} //end for row
 	}
 	
 	/**
@@ -270,6 +276,7 @@ public abstract class SuperCustomFunctions {
 	 */
 	protected final boolean setDuration(int col, int row, int d) {
 		if (!this.isValidColRow(col, row)) return false;
+		if (d > this.getTotalNumOfCols() - col) return false;
 		return scorePane.setDuration(d, col, row);
 	}
 	
@@ -299,40 +306,16 @@ public abstract class SuperCustomFunctions {
 	}
 	
 	/**
-	 * Reads and returns a String representation of the current instrument, plus features of the
-	 * note located at (col, row). If the note is null, its feature is represented simply as "-".
-	 * See NoteFeatures class for more details.
-	 * @param col
-	 * @param row
-	 * @return String representation of note's features
-	 */
-	protected final String getNoteFeaturesStr(int col, int row) {
-		return new NoteFeatures(scorePane.getNote(col, row), this.getTotalNumOfCols()).getBitSetBinaryString();
-	}
-	
-	/**
 	 * Reads and returns a NoteFeatures object containing features of the note at (col, row).
 	 * If the note is null, then the resulting NoteFeatures object's noteIsNull() method will return true.
 	 * @param col
 	 * @param row
 	 * @return
 	 */
-	protected final BitSet getNoteFeatures(int col, int row) {
+	protected final NoteFeatures getNoteFeatures(int col, int row) {
 //		if (!this.isValidColRow(col, row)) return null;
 		//The below initialization step checks for null note at (col, row), so above line of code unnecessary.
-		return new NoteFeatures(scorePane.getNote(col,  row), this.getTotalNumOfCols()).getBitSet();
-	}
-	
-	/**
-	 * Given a bitset, notates it on the scorepane (assuming it's a valid note).
-	 * If it's a valid note and there is another note at the position it would occupy, then
-	 * overwrites it depending on the boolean param.
-	 * @param bs
-	 * @param overwrite
-	 */
-	protected final void notateFromBitset(BitSet bs, boolean overwrite) {
-		NoteFeatures nf = new NoteFeatures(bs, this.getTotalNumOfCols());
-		this.notateFromNoteFeatures(nf, overwrite);
+		return new NoteFeatures(scorePane.getNote(col,  row));
 	}
 	
 	/**
@@ -343,8 +326,8 @@ public abstract class SuperCustomFunctions {
 	 * @param overwrite
 	 */
 	protected final void notateFromNoteFeatures(NoteFeatures nf, boolean overwrite) {
-		if (nf.noteIsNull()) return;
-		int col = nf.getStartIdx();
+		if (nf.getNoteIsNull()) return;
+		int col = nf.getColStartIdx();
 		int row = nf.getRowIdx();
 		
 		//If this (col,row) already contains another note, and overwrite == true, then delete that note first
@@ -360,7 +343,7 @@ public abstract class SuperCustomFunctions {
 	}
 	
 	/**
-	 * Performs an xor between 2 bitsets.
+	 * Performs an xor between 2 bitsets. Can be used to play around with stencil bits attribute in NoteFeatures
 	 * @param b1
 	 * @param b2
 	 * @return
@@ -371,12 +354,52 @@ public abstract class SuperCustomFunctions {
 		return b1Copy;
 	}
 
+	/**
+	 * 
+	 * @return Tempo value
+	 */
+	protected final int getTempo() {
+		return this.scorePane.getTempo();
+	}
 	
+	/**
+	 * Set tempo value
+	 * @param tempo
+	 */
+	protected final void setTempo(int tempo) {
+		//No need to check for valid tempo; the method below does it for you
+		this.scorePane.setTempo(tempo);
+	}
+	
+	/**
+	 * Get the current column that is active
+	 * @return
+	 */
+	protected final int getCurrentActiveColumn() {
+		return this.scorePane.getActiveColumn();
+	}
+	
+	/**
+	 * Set the active column to specified index
+	 * @param colIndex
+	 */
+	protected final void setActiveColumn(int colIndex) {
+		if (this.isValidColRow(colIndex, 0)) this.scorePane.setActiveColumn(colIndex);
+	}
+	
+	/**
+	 * 
+	 * @param color
+	 * @return
+	 */
 	protected final int convertColorToInt(Color color) {
-		Integer colorInt = ColorIntMap.getRGBHashMap().get(color);
+		Integer colorInt = rgbHashMap.get(color);
 		if (colorInt == null) return -1;
 		return colorInt;
-		
+	}
+	
+	protected final int getTotalNumOfColors() {
+		return intToRGBArr.length;
 	}
 	
 	/**
@@ -389,6 +412,27 @@ public abstract class SuperCustomFunctions {
 		if (!this.isValidColRow(col, row) || !this.isValidVolume(volume)) return;
 		scorePane.setNoteVolume(col,row,volume);
 	}
+	
+	/**
+	 * Starts playback from the given column index.
+	 * @param colIndex
+	 */
+	protected final void startPlayBack(int colIndex) {
+		this.setActiveColumn(colIndex);
+		if (this.getCurrentActiveColumn() == colIndex) scorePane.startPlayBack();
+	}
+	
+	protected final int computeRowFromPitch(int pitch) {
+		return scorePane.computeRow(pitch);
+	}
+	
+	/**
+	 * Stops playback
+	 */
+	protected final void stopPlayBack() {
+		this.scorePane.stopPlayBack();
+	}
+	
 	/**********************************************************************************************************************
 	 * End utility methods
 	 **********************************************************************************************************************/

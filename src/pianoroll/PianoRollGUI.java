@@ -15,6 +15,8 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiChannel;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Soundbank;
+import javax.sound.midi.SoundbankResource;
 import javax.sound.midi.Synthesizer;
 
 import convertmidi.MidiFile;
@@ -56,6 +58,7 @@ import main.KeySignature;
 public class PianoRollGUI extends Application {
 	public static final int TOTAL_NUM_PITCHES = 88;
 	public static final int MIN_PITCH = 20, MAX_PITCH = MIN_PITCH + TOTAL_NUM_PITCHES;
+	public static final int RESERVED_DRUM_INSTRUMENT_MIDI_INDEX = 9;
 	
 	private Stage primaryStage;
 	private HBox measuresHB;
@@ -166,9 +169,16 @@ public class PianoRollGUI extends Application {
 					mChannels[note.getChannel()].noteOff(note.getPitch());
 				} //end for
 	    		
-	    		
-	    		
+	    		//Note off all previous notes
+	    		for (WrapperNote note : prevNotesAL) {
+	    			if (note == null) continue;
+	    			
+					mChannels[note.getChannel()].noteOff(note.getPitch());
+	    		}
     		} //end while
+    		
+    		
+    		
     		disableDuringPlayback(false);
     		cancelTask = false;
 	   }
@@ -200,8 +210,9 @@ public class PianoRollGUI extends Application {
 
 				//get and load default instrument and channel lists
 		        instrumentArr = midiSynth.getAvailableInstruments();
+		        
 		        System.out.println(instrumentArr.length);
-		        midiSynth.loadInstrument(instrumentArr[0]);//load an instrument
+//		        midiSynth.loadInstrument(instrumentArr[0]);//load an instrument
 				mChannels = midiSynth.getChannels();
 				System.out.println("How many channels does mChannels have? " + mChannels.length);
 				
@@ -475,16 +486,17 @@ public class PianoRollGUI extends Application {
         	focusedScorePane.muteSelectedNotes(false);
         });
         
-        this.melodyChordModeCB = new CheckBox();
-        setMelodyChordModeCB(this.chordBuilderMode);
-        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Chord Mode", melodyChordModeCB);
-        toggleMelodyChordMode.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SLASH));
-        toggleMelodyChordMode.setOnAction(e -> {
-        	this.chordBuilderMode = !this.chordBuilderMode;
-        	this.setMelodyChordModeCB(this.chordBuilderMode);
-//        	lockMelodyNotes(chordBuilderMode);
-        	updateInfoPane();
-        });
+        //Update: disable this for now. Color note scheme is kind of a mess and we don't want to designate a special color for melody right now
+//        this.melodyChordModeCB = new CheckBox();
+//        setMelodyChordModeCB(this.chordBuilderMode);
+//        MenuItem toggleMelodyChordMode = new MenuItem("Toggle Chord Mode (currently disabled)", melodyChordModeCB);
+//        toggleMelodyChordMode.setAccelerator(new KeyCodeCombination(KeyCode.BACK_SLASH));
+//        toggleMelodyChordMode.setOnAction(e -> {
+//        	this.chordBuilderMode = !this.chordBuilderMode;
+//        	this.setMelodyChordModeCB(this.chordBuilderMode);
+////        	lockMelodyNotes(chordBuilderMode);
+//        	updateInfoPane();
+//        });
         MenuItem raiseOctave = new MenuItem("Raise Octave");
         raiseOctave.setAccelerator(new KeyCodeCombination(KeyCode.UP, KeyCombination.CONTROL_DOWN));
         raiseOctave.setOnAction(e -> {
@@ -674,7 +686,8 @@ public class PianoRollGUI extends Application {
 
         menuEdit.getItems().addAll(selectAll, copySelected, cutSelected, pasteSelected, insertSelected,
         		findNextSelectedPattern, muteSelectedNotes, unmuteSelectedNotes,
-        		toggleMelodyChordMode, raiseOctave, lowerOctave, nextCol, prevCol, 
+//        		toggleMelodyChordMode, 
+        		raiseOctave, lowerOctave, nextCol, prevCol, 
         		backSpace, deleteNotesInColumn, deleteSelectedNotes, deleteAllNotesInMeasure, 
         		changeKS, changeTempo, increaseTempo, decreaseTempo, 
         		changeMeasureProperty, insertOrDeleteCells, transpose);
@@ -942,6 +955,9 @@ public class PianoRollGUI extends Application {
 	
 	private void saveToFile(File currSaveFile, boolean updateInfoPane) {
 		ArrayList<WrapperNote> noteAL = new ArrayList<>();
+		//Deselect all notes first
+		focusedScorePane.deSelectAll();
+		
         //Read from the measure (we assume a single measure only) and save each note as a Note object, 
         //along with column index, and duration per cell info (let's just save it as 1), and tempo,
         //and no. of cells in this measure.
@@ -1320,7 +1336,7 @@ public class PianoRollGUI extends Application {
 //			System.out.println(PITCH_MAP.get("Z") + Harmonizer.SCALE * octave);
 			if (k.getCode().isDigitKey()) {
 				System.out.println(k.getCode().getName());
-				if (k.getCode().getName().startsWith("Numpad")) return;
+				if (k.getCode().getName().startsWith("Numpad")) return; //numpad digits will be disabled from changing note color
 				try {
 					focusedScorePane.colorSelectedNotes(Integer.parseInt(k.getCode().getName()));
 				} catch (NumberFormatException nfe) {
@@ -1579,21 +1595,52 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) make up custom (utility) function for notating a note given a bitset
 	//TODO (DONE) readme file for customfunctions
 	
-	//TODO consider editing NoteFeatures such that each indiivudal attribute is saved as its own bitset file.
-	//     this might make it easier to perform bit operations only using the attributes you want to change,
-	//     while leaving other attributes you might not want to change intact (e.g. col index, duration...)
 	
-
-	//TODO Todo list of features and metohds
-	//TODO Features of a particular note by (c,r)
-	//TODO Each of these features has a read/write function, as follows…
-	//TODO Tutorial video
-	//TODO stencilBits for NoteFeatures, set/write
-	//TODO tutorial on how to access individual bits in a int attribute like stencilbits
+	
+	//Update as of 5.2.2018
+	//TODO (DONE) With John's help, clean up CustomFunctions and move many of the core methods to SuperCustomFunctions
+	//TODO (DONE) With John's help, clean up the process by which the end user can add custom functions.
+	//TODO (DONE) when saving, deselect every note first
+	//TODO (DONE) debug mute / unmute command, set aside new variable called origVolume for this purpose
+	//TODO (DONE) clean up NoteFeatures such that stencilbits is the only attribute that can be explicitly
+	//     converted and returned as a bitset object or binary string. If the end user wants to play around
+	//     with other attributes in a bit format (not recommended I don't think, due to the unexpected behaviors
+	//     this can cause, e.g. modifying the column index attribute so that it's out of range of the score pane).
+	//     s/he can create custom methods to do so.
+	//TODO (DONE) stencilBits for NoteFeatures, set/write
+	//TODO (DONE) read/write function for each feature in NoteFeatures
+	//TODO (DONE) getTempo/setTempo should be a custom (protected) method	
+	//TODO (DONE) stop/start playback be a custom (protected) method as well?
+	//TODO (DONE) get current active column should be a custom (protected) method
+	//TODO (DONE) debug changeInstrument() method in PianoRollGUI, some instruments aren't loading correctly.
+	//TODO (DONE) edit changeInstrument() so that both the bank and the patch # are taken into account
+	//TODO (DONE) realize that drum kit instrument is fixed to channel index 9 (see https://en.wikipedia.org/wiki/General_MIDI)
+	//TODO (DONE) update infopane re: above fixed drum channel
+	//TODO (DONE) Tutorial videos
+	//TODO (DONE) make up a function that composes a random dance track with multiple instruments
+	
+	//TODO (DONE) create a ColorEnum class for binding certain "special" colors for notes, such as GRAY for mute
+	
+	//TODO there is no UI option for the end user to set note volume (other than mute/unmute)
+	
+	//TODO color scheme between CustomFunctions and UI interface commands is messed up
+	//     (e.g. unmute doesn't change colors back, default colors like mute=gray doesn't always work etc.
+	//     Consider doing away with custom colors altogether?
+	//TODO have a "lock entire pianoroll from editing" or similar option
+	//TODO do we really need a WrapperNote class? Can't we just use RectangleNote for everything?
+	
+	//TODO consider re-doing color RGB to Int map, to account for all possible colors 255 x 255 x 255
+	//TODO alert pane for when end users make a mistake, esp while using custom functions pane
+	//TODO consider editing Note / RectangleNote / WrapperNote classes for less redundancy.
+	//     (perhaps have WrapperNote be a subclass, and have RectangleNote contain a Note attribute?)
+	//TODO consider using code re: command line build of custom functions, another thread
+	//     https://stackoverflow.com/questions/8496494/running-command-line-in-java
+	//     https://stackoverflow.com/questions/16137713/how-do-i-run-a-java-program-from-the-command-line-on-windows
+	//TODO debug export to midi problem 
 	//TODO ex. Show how to change color of all notes for which stencilbit index 3 == 1, turn it green
 	//TODO functionality to save to defaultcustomfunctions and load from it in event of a catastrophe
 	//TODO expeirment with converting individual packages to jars except for custom functions class
-	//TODO consider using code re: command line build of custom functions, another thread 
+	
 	//TODO button in the custom pane for building from source
 	//TODO button for save/load, implement it in custom pane and link the function to supercustom
 	
@@ -1764,9 +1811,21 @@ public class PianoRollGUI extends Application {
 	}
 	
 	public void changeInstrument(int instr, int midichannel) {
-		mChannels[midichannel].programChange(instr);
+		System.out.println(this.instrumentArr[instr].toString());
+		String instrStr = this.instrumentArr[instr].toString();
+		if (instrStr.startsWith("Drumkit")) {
+//			midichannel = 10;
+			mChannels[midichannel].programChange(instr);
+			this.midiInstrumentArr[midichannel] = instr;
+			updateInfoPane();
+			return;
+		}
+		int bankNo = Integer.parseInt(instrStr.substring(instrStr.indexOf("bank #") + "bank #".length(), instrStr.indexOf(" preset #")));
+		int presetNo = Integer.parseInt(instrStr.substring(instrStr.indexOf("preset #") + "preset #".length()));
+		mChannels[midichannel].programChange(bankNo, presetNo);
 		this.midiInstrumentArr[midichannel] = instr;
 		updateInfoPane();
+		System.out.println(this.getFocusedMidiChannel());
 	}
 	
 	private ScorePane prevMeasure(ScorePane currMeasure) {
@@ -2018,6 +2077,7 @@ public class PianoRollGUI extends Application {
 
 		//Save current canvas to file, pursuant to the comments above
 		ArrayList<WrapperNote> noteAL = new ArrayList<>();
+		focusedScorePane.deSelectAll();
 		//Read from the measure (we assume a single measure only) and save each note as a Note object, 
 		//along with column index, and duration per cell info (let's just save it as 1), and tempo,
 		//and no. of cells in this measure.
@@ -2087,6 +2147,7 @@ public class PianoRollGUI extends Application {
 		
 		//Save current canvas to file, then exclude notes that will be deleted along with columns
 		ArrayList<WrapperNote> noteAL = new ArrayList<>();
+		focusedScorePane.deSelectAll();
         for (int row = 0; row < ScorePane.ROWS; ++row) {
         	noteAL.addAll(focusedScorePane.getAllNotesInRow(row));
         } //end for row

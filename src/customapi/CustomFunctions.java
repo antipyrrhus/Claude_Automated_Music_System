@@ -1,9 +1,6 @@
 package customapi;
-import java.util.BitSet;
-import java.util.HashMap;
-
+import java.util.Random;
 import javafx.application.Application;
-import javafx.scene.paint.Color;
 import pianoroll.*;
 
 /**
@@ -11,12 +8,6 @@ import pianoroll.*;
  * on the ScorePane, without such users having to tinker with the ScorePane class directly.
  */
 public class CustomFunctions extends SuperCustomFunctions{
-//	private ScorePane scorePane;  //class for displaying / modifying notes.
-//	private CustomFunctionsPane cfp; //GUI for the end user
-//	private HashMap<Integer, String> commandsStrHM; //Maps an index value to the name of a method in this class
-//	private HashMap<String, Runnable> commandsHM;   //Maps the name of a method in this class to the actual executable function
-////	private static final Color[] intToColorArr = ColorIntMap.intToColorArr; //Int to color map
-//	private static final Color[] intToRGBArr = ColorIntMap.getIntToRGBArr(); //More robust RGB color map
 	
 	/**
 	 * Constructor
@@ -26,31 +17,69 @@ public class CustomFunctions extends SuperCustomFunctions{
 	public CustomFunctions(ScorePane scorePane, CustomFunctionsPane cfp) {
 		super(scorePane, cfp);
 		init();
-//		this.scorePane = scorePane;
-//		this.cfp = cfp;
-//		this.commandsHM = new HashMap<>();
-//		this.commandsStrHM = new HashMap<>();
 	}
 		
 	private void init() {
 		/* Mapping between index and function name (String) */
 		int index = 0;
-		String str = "";
-		
+
 		/*********************************************************************************************************************
 		 * -= Begin custom template =-
 		 * 
 		 * Here, the end user may use the below template for each method you wish to be displayed on the GUI.
 		 * Edit the str name with the method name and signature.
 		 * Edit the x in this.getAndValidateIntParamArr(x), depending on how many params the method takes.
-		 * Edit the this.getNoteFeaturesStr() method depending on x.
+		 * Edit the actual method with the correct number of parameters.
+		 * Leave the last parameter (the number '0') as is for now. This indicates the type of parameters,
+		 * and is currently not relevant as all params must be int type.
 		 * 
 		 * NOTE: For now, every custom method MUST take in params of type int only. 
-		 * (TODO) Might need to later change the above constraint, if needed.
+		 * Might need to later change the above constraint, if needed.
 		 * 
 		 * NOTE 2: End user should not invoke methods from classes other than those in the current class and 
-		 * current package (customapi) when creating custom (non-utility) methods, as it may result in unexpected behavior.
+		 * its superclass, to help prevent unexpected behavior.
 		 *********************************************************************************************************************/
+		//Calls inherited method from SuperCustomFunctions
+		
+		this.registerCustomFunc(
+				"alternateVolume(int measures, int volumeStart, int volumeEnd)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(3);
+					this.alternateVolume(params[0], params[1], params[2]);
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"changeColorAll(int colorOffset)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(1);
+					this.changeColorAll(params[0]);
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"clearAll()",
+				index++,
+				() -> {
+//					int[] params = this.getAndValidateIntParamArr(1);
+					this.clearAll();
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"doubleCircleOfXth(int startRowA, int startRowB, int colorA, int colorB, int xA, int xB)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(6);
+					this.doubleCircleOfXth(params[0], params[1], params[2], params[3], params[4], params[5]);
+				},
+				0
+		);
 		
 		this.registerCustomFunc(
 				"rampVolumeGivenMeasureRange(int startMeasureIdx, int endMeasureIdx, int volumeStart, int volumeEnd)",
@@ -62,68 +91,68 @@ public class CustomFunctions extends SuperCustomFunctions{
 				0
 		);
 		
+		this.registerCustomFunc(
+				"randomDanceSample(int tonicKey, int major)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(2);
+					this.randomDanceSample(params[0], params[1]);
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"setTempo(int tempo)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(1);
+					this.setTempo(params[0]);
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"setVolume(int col, int row, int volume)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(3);
+					this.setVolume(params[0], params[1], params[2]);
+				},
+				0 
+		);
+		
+		this.registerCustomFunc(
+				"startPlayBack(int colIndex)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(1);
+					this.startPlayBack(params[0]);
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"stopPlayBack()",
+				index++,
+				() -> {
+//					int[] params = this.getAndValidateIntParamArr(0);
+					this.stopPlayBack();
+				},
+				0
+		);
+		
+		this.registerCustomFunc(
+				"setInstrumentAll(int instrument, int channel)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(2);
+					this.setInstrumentAll(params[0], params[1]);
+				},
+				0
+		);
 		
 		
-//		str = "rampVolumeGivenMeasureRange(int startMeasureIdx, int endMeasureIdx, int volumeStart, int volumeEnd)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(4);
-//			this.rampVolumeGivenMeasureRange(params[0], params[1], params[2], params[3]);
-//		});
-		
-		
-//		str = "readColor(int col, int row)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(2);
-//			System.out.println(this.readColor(params[0], params[1]));
-//		});
-//		
-//		
-//		str = "setVolumeGivenMeasureRange(int startMeasureIdx, int endMeasureIdx, int volume)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(3);
-//			this.setVolumeGivenMeasureRange(params[0], params[1], params[2]);
-//		});
-//		
-//		
-//		str = "changeInstrument(int instrument, int mChannel)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(2);
-//			this.changeInstrument(params[0], params[1]);
-//		});
-//		
-//		str = "clearAll()";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-////			int[] params = this.getAndValidateIntParamArr(0); //not needed since this method has no param
-//			this.clearAll();
-//		});
-//		
-//		str = "circleOfXth(int startRow, int color, int x)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(3);
-//			this.circleOfXth(params[0], params[1], params[2]);
-//		});
-//		
-//		str = "doubleCircleOfXth(int startRowA, int startRowB, int colorA, int colorB, int xA, int xB)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(6);
-//			this.doubleCircleOfXth(params[0], params[1], params[2], params[3], params[4], params[5]);
-//		});
-//		
-//		
-//		str = "changeVolume(int colorInt, int newVol)";
-//		this.commandsStrHM.put(index++, str);
-//		this.commandsHM.put(str.substring(0, str.indexOf("(")), () -> {
-//			int[] params = this.getAndValidateIntParamArr(2);
-//			this.changeVolume(params[0], params[1]);
-//		});
-	}
+	} //end private void init()
 	
 	/******************************************************************************************************************
 	 * -= End of custom template =-
@@ -140,23 +169,24 @@ public class CustomFunctions extends SuperCustomFunctions{
 	 * 
 	 * NOTE: For now, every custom method MUST take in params of type int only, but
 	 * the no. of parameters may be arbitrary.
-	 * (TODO) Might need to later change the above constraint, if needed.
 	 ******************************************************************************************************************/
-		
-	
-//	public int getTotalNumOfColumns() {
-//		return super.getTotalNumOfCols();
-//	}
-	
+
 	/**
-	 * Clears the score pane of all notes
+	 * Sets all notes in score pane to the given instrument and midi channel. 
+	 * @param instrument
+	 * @param channel
 	 */
-	public void clearAll() {
-		for (int row = 0; row < this.getTotalNumOfRows(); ++row) {
-			for (int col = 0; col < this.getTotalNumOfCols(); ++col) {
-				this.setColor(col, row, -1);
-			}
-		} //end for row
+	public void setInstrumentAll(int instrument, int channel) {
+		this.changeInstrument(instrument, channel);
+		if (this.isValidInstrument(instrument)) {
+			for (int c = 0; c < this.getTotalNumOfCols(); ++c) {
+				for (int r = 0; r < this.getTotalNumOfRows(); ++r) {
+					if (this.readColor(c, r) != -1 && this.getStartCol(c, r) == c) {
+						this.setNoteToChannel(c, r, channel);
+					}
+				} //end for r
+			} //end for c
+		} //end if
 	}
 	
 	/**
@@ -291,378 +321,168 @@ public class CustomFunctions extends SuperCustomFunctions{
 		} //end if
 	}
 	
-	public void changeVolume(int colorInt, int newVol) {
+	public void changeVolumeGivenColor(int colorInt, int newVol) {
 		for (int c = 0; c < this.getTotalNumOfCols(); ++c) {
 			for (int r = 0; r < this.getTotalNumOfRows(); ++r) {
 				if (this.readColor(c, r) == colorInt) {
 					this.setVolume(c, r, newVol);
 				}
 			}
+		} //end for c	
+	}
+	
+	public void alternateVolume(int measures, int volumeStart, int volumeEnd) {
+		if (measures <= 0) return;
+		boolean everyOtherIter = true;
+		for (int i = 0; i < this.getTotalNumOfCols(); i += measures) {
+			if (everyOtherIter) this.rampVolumeGivenMeasureRange(i, i + measures, volumeStart, volumeEnd);
+			else this.rampVolumeGivenMeasureRange(i, i + measures, volumeEnd, volumeStart);
+			everyOtherIter = !everyOtherIter;
+		}
+	}
+	
+	public void changeColorAll(int colorOffset) {
+		for (int c = 0; c < this.getTotalNumOfCols(); ++c) {
+			for (int r = 0; r < this.getTotalNumOfRows(); ++r) {
+				int color = this.readColor(c, r);
+				if (color >= 0 && this.getStartCol(c, r) == c) {
+					int newColor = color + colorOffset;
+					if (newColor < 0) newColor = -newColor;
+					if (newColor >= this.getTotalNumOfColors()) newColor %= this.getTotalNumOfColors();
+					this.setColor(c, r, newColor);
+				}
+			}
 		} //end for c
+	}
+	
+	/**
+	 * 
+	 * @param tonicKey 0 = C, 1 = C#, etc.
+	 * @param major 1 if major, 0 if not
+	 */
+	public void randomDanceSample(int tonicKey, int major) {
+	
+		/* Have a constant drum track with some rhythm, and set a base and melody channel too. 
+		 * Base should play random non repeating notes that belong to specified key signature and mode, 
+		 * within a single octave. melody should be some soothing instrument, ie techno, and follow some 
+		 * set rhythm, and be constrained within one or two octaves, and play some possibly repeating notes pertaining
+		 * to that same key signature. Or alternatively, have the melody play some ascending sequence of nonrepeating
+		 * notes, belonging to that key signature, with some possiblity of skipping some notes in that sequence. 
+		 * Perhaps, e.g. in C major, have the melody play c d e f g a b c, followed by e g a c d f g b
+		 * followed by a b c e g b d e followed by f a b c d f g a , folllowed by c... and so on */
+		this.clearAll();
 		
+		//Two types of drum beats
+		int lowDrumRow = 0;
+		int highDrumRow = 10;
+		
+		//Set channels and some arbitrary colors for each instrument
+		int drumChannel = 0;
+		int drumColor = 100;
+		int bassChannel = 1;
+		int bassColor = 400;
+		int bassTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*1); //1 octave from bottom
+		int altoChannel = 2;
+		int altoColor = 5;
+		int altoTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*4); //4 octaves from bottom
+		int padChannel = 3;
+		int padColor = 2000;
+		int padTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*3); //3 octaves from bottom
+		
+		this.changeInstrument(234, drumChannel);
+		this.changeInstrument(33, bassChannel);
+		this.changeInstrument(88, altoChannel);
+		this.changeInstrument(89, padChannel);
+		
+		int[] majorIntv = {0, 2, 4, 5, 7, 9, 11, 12, 14, 16};
+		int[] minorIntv = {0, 2, 3, 5, 7, 8, 10, 12, 14, 15};  //natural minor
+		int[] intv;
+		if (major == 1) {
+			intv = majorIntv;
+		} else {
+			intv = minorIntv;
+		}
+		
+		Random r = new Random();
+		int pickupOffset = this.getMeasureOffset();
+		int totalCols = this.getTotalNumOfCols();
+		int colsPerMeasure = this.getNumColsPerMeasure();
+		
+		int prevBassRow = -1;
+		int prevAltoRow = -1;
+		int crashIter = 0;
+		int crashFreq = 4;
+		
+		//Start at the first downbeat and notate each instrument
+		for (int i = pickupOffset; i < totalCols; ++i) {
+			if (i % colsPerMeasure == pickupOffset) { //this means we're at the first downbeat of the measure
+				if (crashIter % crashFreq == 0) {
+					//Fixed drum channel
+					this.setColor(i, 51, 1567);
+					this.setNoteToChannel(i, 51, 9);
+				}
+				crashIter++;
+				
+				//low drum beat
+				this.setColor(i, lowDrumRow, drumColor);
+				this.setNoteToChannel(i, lowDrumRow, drumChannel);
+				
+				//tonic bass note
+				this.setColor(i, this.computeRowFromPitch(bassTonicPitch), bassColor);
+				this.setNoteToChannel(i, this.computeRowFromPitch(bassTonicPitch), bassChannel);
+				
+				//pad chord
+				int randomChordLength = r.nextInt(2) + 3;
+				int[] padSequence = new Random().ints(0, intv.length).distinct().limit(randomChordLength).toArray();
+				for (int p : padSequence) {
+					int padRow = this.computeRowFromPitch(padTonicPitch + intv[p]);
+					this.setColor(i, padRow, padColor);
+					this.setNoteToChannel(i, padRow, padChannel);
+					this.setDuration(i, padRow, colsPerMeasure);
+				}
+					
+			} else { //not at the first downbeat of the measure
+				
+				int drumRow, bassRow, altoRow;
+				if (r.nextDouble() < 2.0/3) {
+					//low drum beat with probability 2/3
+					drumRow = lowDrumRow;
+					altoRow = -1; //skip alto this time
+				} else {
+					 drumRow = highDrumRow;
+					 do {
+						 int randAltoIndex = r.nextInt(intv.length);
+						 altoRow = this.computeRowFromPitch(altoTonicPitch + intv[randAltoIndex]);
+					 } while (altoRow == prevAltoRow);
+				}
+				this.setColor(i, drumRow, drumColor);
+				this.setNoteToChannel(i, drumRow, drumChannel);
+				
+				//up to an octave + 3rd major up from the tonic note for bassRow
+				//Make sure the pitch selected belongs to the scale, and is non-repeating
+				do {
+					int bassRandomIdx = r.nextInt(intv.length);
+					bassRow = this.computeRowFromPitch(bassTonicPitch + intv[bassRandomIdx]);
+				} while (bassRow == prevBassRow);
+				
+				if (bassRow >= 0) prevBassRow = bassRow;
+				System.out.println(bassRow + " ");
+				this.setColor(i, bassRow, bassColor);
+				this.setNoteToChannel(i, bassRow, bassChannel);
+				
+				
+				if (this.readColor(i, altoRow) == -1) {
+					this.setColor(i, altoRow, altoColor);
+					this.setNoteToChannel(i, altoRow, altoChannel);
+					if (altoRow >= 0) prevAltoRow = altoRow;
+				}				
+			}
+		}
 	}
-	
-	
-	
-	
-	//TODO
-	private BitSet xorBitSets(BitSet b1, BitSet b2,
-			boolean xorColIdx, boolean xorRowIdx,
-			boolean xorDuration, boolean xorColor,
-			boolean xorMidiChannel, boolean xorVolume,
-			boolean copyFirstBSIfNoXOR) {
-		BitSet b1Copy = (BitSet)b1.clone(); 
-		b1Copy.xor(b2);
-		return null;
-	}
-	
-	
-	
 	
 	/**********************************************************************************************************************
 	 * End custom methods
 	 **********************************************************************************************************************/
-	
-	
-	
-	
-	
-	
-//	/**********************************************************************************************************************
-//	 * -= Begin utility methods =-
-//	 * 
-//	 * These are utility methods, unlikely to be directly called from the Custom GUI.
-//	 * 
-//	 * NOTE: Caution should be taken before modifying any of these utility methods.
-//	 * - Some utility methods invoke methods from classes outside of this package. It is not recommended
-//	 *   that the end user modify classes outside of this customapi package.
-//	 * - Some utility methods are called by other classes, such as runCommand() which is invoked by
-//	 *   CustomFunctionsPane, in order to execute the custom methods from the GUI interface.
-//	 * - However, most utility methods are used by other custom methods in this class.
-//	 ***********************************************************************************************************************/
-//	
-//	/**
-//	 * Returns the index of the column that constitutes the start of the given measure index.
-//	 * (Measure index starts at 0, as per usual). Takes account of measure offset value, if any.
-//	 * @param measureIdx
-//	 * @return
-//	 */
-//	private int getStartColIdxOfMeasure(int measureIdx) {
-//		int colsPerMeasure = this.getNumColsPerMeasure();
-//		int measureOffset = this.getMeasureOffset();
-//		
-//		int startIndex = (measureOffset == 0 ? measureIdx * colsPerMeasure : 
-//							measureIdx == 0 ? 0 : (measureIdx - 1) * colsPerMeasure + measureOffset);
-//		return startIndex;
-//	}
-//	
-//	/**
-//	 * Helper method to ensure that a pitch doesn't go out of bounds. 
-//	 * Performs mod operation and returns the new row index, if needed.
-//	 * @param row
-//	 * @return
-//	 */
-//	private int modRow(int row) {
-//		if (row < 0) row = this.getTotalNumOfRows() + row;
-//		else if (row >= this.getTotalNumOfRows()) row = row - this.getTotalNumOfRows();
-//		return row;
-//	}
-//	
-//	/**
-//	 * @return total no. of columns in the scorepane
-//	 */
-//	private int getTotalNumOfCols() {
-//		return this.scorePane.getCol();
-//	}
-//	
-//	/**
-//	 * @return total no. of rows in the scorepane (should return 88, to simulate piano)
-//	 */
-//	private int getTotalNumOfRows() {
-//		return ScorePane.ROWS;
-//	}
-//	
-//	/**
-//	 * Helper function to ensure (col, row) isn't out of range
-//	 * @param col
-//	 * @param row
-//	 */
-//	private boolean isValidColRow(int col, int row) {
-//		if (row < 0 || row >= ScorePane.ROWS || col < 0 || col >= scorePane.getCol())
-//			return false;
-//		return true;
-//	}
-//	
-//	
-//	/**
-//	 * Helper function to ensure given color int value isn't out of range
-//	 * If c == -1, this indicates a "null" note.
-//	 * @param c
-//	 */
-//	private boolean isValidColor(int c) {
-//		if (c < -1 || c >= intToRGBArr.length) return false;
-//		return true;
-//	}
-//	
-//	/**
-//	 * Checks whether the given instrument int value is out of range
-//	 * @param instrument
-//	 * @return
-//	 */
-//	private boolean isValidInstrument(int instrument) {
-//		return scorePane.isValidInstrument(instrument);
-//	}
-//
-//	/**
-//	 * Checks whether the channel index is out of range.
-//	 * @param channel
-//	 * @return
-//	 */
-//	private boolean isValidMidiChannel(int channel) {
-//		if (channel < 0 || channel >= scorePane.getMidiChannelLength()) return false;
-//		return true;
-//	}
-//	
-//	private boolean isValidVolume(int vol) {
-//		if (vol < 0 || vol > scorePane.getMaxVol()) return false;
-//		return true;
-//	}
-//	
-//	/**
-//	 * Returns the color at the selected (col, row)
-//	 * @param col
-//	 * @param row
-//	 * @return color int value (See pianoroll/ColorIntMap.java)
-//	 */
-//	private int readColor(int col, int row) {
-//		if (!this.isValidColRow(col, row)) return -1;
-//		return scorePane.getColor(col,row);
-//	}
-//	
-//	/**
-//	 * Sets the note at location (col, row) to the color which is mapped to the given int value.
-//	 * If there is no note at that location, creates a note of length 1 and then colors it.
-//	 * Note: if c == -1, then deletes the note instead.
-//	 * @param col
-//	 * @param row
-//	 * @param c
-//	 */
-//	private boolean setColor(int col, int row, int c) {
-//		if (!this.isValidColor(c) || !this.isValidColRow(col, row)) return false;
-//		if (c == -1) return scorePane.setColor(col, row, c);
-//		else return scorePane.setColor(col,  row, intToRGBArr[c]);
-//	}
-//	
-//	/**
-//	 * Looks up the CustomFunctionsPane class, and from it reads the list of parameters that are intended
-//	 * for one of the functions in this class (assumed to be an array of ints).
-//	 * Then, makes sure that there are a sufficient number of parameters; if not throws an exception.
-//	 * @param num
-//	 * @return list of parameters
-//	 */
-//	private int[] getAndValidateIntParamArr(int num) {
-//		int[] params = this.cfp.getParams();
-//		if (params.length < num) throw new RuntimeException("Invalid parameters: no. of parameters must be >= " + num);
-//		return params;
-//	}
-//	
-//	/**
-//	 * Sets the note located at (col, row), if any, to the specified midi channel.
-//	 * Each midi channel (out of a total of 16 channels) can be assigned a distinct instrument.
-//	 * @param col
-//	 * @param row
-//	 * @param channel
-//	 */
-//	private void setNoteToChannel(int col, int row, int channel) {
-//		if (this.isValidColRow(col, row) && this.isValidMidiChannel(channel)) {
-//			scorePane.setNoteToChannel(col, row, channel);
-//		}
-//	}
-//	
-//	/**
-//	 * Returns the total number of columns per a single measure.
-//	 * @return
-//	 */
-//	private int getNumColsPerMeasure() {
-//		return scorePane.getColsPerMeasure();
-//	}
-//	
-//	/**
-//	 * Returns the offset (no. of columns) at the beginning before the first measure bar.
-//	 * @return
-//	 */
-//	private int getMeasureOffset() {
-//		return scorePane.getMeasureOffset();
-//	}
-//	
-//	/**
-//	 * Sets a new duration (sustained or "held" duration" of the note at (col, row))
-//	 * 
-//	 * If there is no note at this location, does nothing and returns false.
-//	 * 
-//	 * If there is a note, then tries to modify its duration, but will abort and return false
-//	 * in the event that doing so would affect other notes  (e.g. extending its duration would overwrite another note) 
-//	 * or would cause the note to extend beyond the total number of columns in the ScorePane.
-//	 * 
-//	 * If there is a note and d == 0, then deletes that note (has the same effect as setColor() method with -1
-//	 * as the color parameter) and returns true.
-//	 * 
-//	 * @param d the duration to set
-//	 * @param col
-//	 * @param row
-//	 * @return true IFF there is a note at (col, row) AND its duration was successfully modified.
-//	 */
-//	private boolean setDuration(int col, int row, int d) {
-//		if (!this.isValidColRow(col, row)) return false;
-//		return scorePane.setDuration(d, col, row);
-//	}
-//	
-//	/**
-//	 * Changes the specified channel's instrument.
-//	 * @param instrument
-//	 * @param mChannel midi channel whose instrument to change
-//	 */
-//	private void changeInstrument(int instrument, int mChannel) {
-//		//Instrument change will fail if the instrument integer parameter is out of range
-//		if (!isValidInstrument(instrument) || !this.isValidMidiChannel(mChannel)) return;
-//		this.scorePane.changeInstrument(instrument, mChannel);
-//	}
-//	
-//	/**
-//	 * Returns the column at which the note queried at (col, row) begins.
-//	 * Used to figure out whether the queried note is held (sustained) for multiple columns
-//	 * If there is no note at this location, returns -1
-//	 * @param col
-//	 * @param row
-//	 * @return the start column of the given note at (col, row)
-//	 */
-//	private int getStartCol(int col, int row) {
-//		//This indicates that there is a null note here.
-//		if (!this.isValidColRow(col, row)) return -1;
-//		return scorePane.getStartCol(col, row);
-//	}
-//	
-//	/**
-//	 * Reads and returns a String representation of the current instrument, plus features of the
-//	 * note located at (col, row). If the note is null, its feature is represented simply as "-".
-//	 * See NoteFeatures class for more details.
-//	 * @param col
-//	 * @param row
-//	 * @return String representation of note's features
-//	 */
-//	private String getNoteFeaturesStr(int col, int row) {
-//		return new NoteFeatures(scorePane.getNote(col, row), this.getTotalNumOfCols()).getBitSetBinaryString();
-//	}
-//	
-//	/**
-//	 * Reads and returns a NoteFeatures object containing features of the note at (col, row).
-//	 * If the note is null, then the resulting NoteFeatures object's noteIsNull() method will return true.
-//	 * @param col
-//	 * @param row
-//	 * @return
-//	 */
-//	private BitSet getNoteFeatures(int col, int row) {
-////		if (!this.isValidColRow(col, row)) return null;
-//		//The below initialization step checks for null note at (col, row), so above line of code unnecessary.
-//		return new NoteFeatures(scorePane.getNote(col,  row), this.getTotalNumOfCols()).getBitSet();
-//	}
-//	
-//	/**
-//	 * Given a bitset, notates it on the scorepane (assuming it's a valid note).
-//	 * If it's a valid note and there is another note at the position it would occupy, then
-//	 * overwrites it depending on the boolean param.
-//	 * @param bs
-//	 * @param overwrite
-//	 */
-//	private void notateFromBitset(BitSet bs, boolean overwrite) {
-//		NoteFeatures nf = new NoteFeatures(bs, this.getTotalNumOfCols());
-//		this.notateFromNoteFeatures(nf, overwrite);
-//	}
-//	
-//	/**
-//	 * Given a notefeatures object, notates it on the scorepane (assuming it's a valid note).
-//	 * If it's a valid note and there is another note at the position it would occupy, then
-//	 * overwrites it depending on the boolean param.
-//	 * @param nf
-//	 * @param overwrite
-//	 */
-//	private void notateFromNoteFeatures(NoteFeatures nf, boolean overwrite) {
-//		if (nf.noteIsNull()) return;
-//		int col = nf.getStartIdx();
-//		int row = nf.getRowIdx();
-//		
-//		//If this (col,row) already contains another note, and overwrite == true, then delete that note first
-//		if (this.readColor(col, row) >= 0) {
-//			if (overwrite) this.setColor(col, row, -1);
-//			else return;
-//		}
-//		
-//		this.setColor(col, row, this.convertColorToInt(nf.getColor()));
-//		this.setDuration(col, row, nf.getDuration());
-//		this.setNoteToChannel(col, row, nf.getMidiChannel());
-//		this.setVolume(col, row, nf.getVolume());
-//	}
-//	
-//	/**
-//	 * Performs an xor between 2 bitsets.
-//	 * @param b1
-//	 * @param b2
-//	 * @return
-//	 */
-//	private BitSet xorBitSets(BitSet b1, BitSet b2) {
-//		BitSet b1Copy = (BitSet)b1.clone(); 
-//		b1Copy.xor(b2);
-//		return b1Copy;
-//	}
-//
-//	
-//	private int convertColorToInt(Color color) {
-//		Integer colorInt = ColorIntMap.getRGBHashMap().get(color);
-//		if (colorInt == null) return -1;
-//		return colorInt;
-//		
-//	}
-//	
-//	/**
-//	 * Sets the note located at (col, row), if any, to the specified volume.
-//	 * @param col
-//	 * @param row
-//	 * @param volume
-//	 */
-//	private void setVolume(int col, int row, int volume) {
-//		if (!this.isValidColRow(col, row) || !this.isValidVolume(volume)) return;
-//		scorePane.setNoteVolume(col,row,volume);
-//	}
-//	
-//	/**
-//	 * Invoked by CustomFunctionsPane class. Once a user selects a function and inputs the correct list of parameters,
-//	 * the corresponding function in this class is executed.
-//	 * @param s
-//	 */
-//	public void runCommand(String s) {
-//		if (this.commandsHM.get(s) == null) throw new RuntimeException("Method name is invalid.");
-//		commandsHM.get(s).run();
-//	}
-//	
-//	/**
-//	 * Invoked by CustomFunctionsPane class, in order to make a list of available functions in this class
-//	 * and display it to the end user.
-//	 * Looks up the String that's associated with the given integer value,
-//	 * where the String indicates the name of a function in this class.
-//	 * @param i
-//	 * @return name of function mapped to the int
-//	 */
-//	public String getCommandsStr(int i) {
-//		return this.commandsStrHM.get(i);
-//	}
-//	
-//	/**********************************************************************************************************************
-//	 * End utility methods
-//	 **********************************************************************************************************************/
-//	
-	
-	
-	
 	
 	/**
 	 * Running this launches the GUI. This should not be changed.

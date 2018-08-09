@@ -7,7 +7,7 @@ import javafx.scene.shape.Rectangle;
 //A wrapper class to indicate each note on the measure.
 //Later this will support notes with different durations
 public class RectangleNote extends Rectangle implements Comparable<RectangleNote> {
-	int colIdx, rowIdx, length, index, channel, volume;  //index = rectArrIndex
+	int colIdx, rowIdx, length, index, channel, volume, origVolume;  //index = rectArrIndex
 	Color color, origColor;  //color = current color (including red, black). origColor = pitch color
 //	boolean isMelody, isSelected, isMute;
 	boolean isSelected;
@@ -20,6 +20,7 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 	RectangleNote(double x, double y, double width, double height, int startIdx, int rowIdx, int length) {
 		super(x,y,width * length,height);
 		this.volume = MidiFile.MAX_VOL;
+		this.origVolume = volume;
 		this.colIdx = startIdx;
 		this.length = length;
 //		this.rowIdx = (int)Math.round(y / heightPerCell);
@@ -75,6 +76,7 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 
 	public void setVolume(int volume) {
 		this.volume = volume;
+		this.origVolume = volume;
 	}
 	
 	/**
@@ -133,6 +135,9 @@ public class RectangleNote extends Rectangle implements Comparable<RectangleNote
 		if (mute) {
 			this.volume = 0;
 //			color = ColorIntMap.intToRGBArr[GREY_IDX];
+		} else {
+			if (this.origVolume == 0) this.origVolume = MidiFile.MAX_VOL;
+			this.volume = this.origVolume;
 		}
 //		else if (this.isMelody) color = Color.DARKRED;
 //		else color = origColor;

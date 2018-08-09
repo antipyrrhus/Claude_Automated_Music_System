@@ -67,7 +67,7 @@ public class ChangeInstrumentPane extends BorderPane {
         bottomVB.getChildren().addAll(checkbox, hb);
         
         //Instruction Label on top
-        Label instr_lbl = new Label(String.format("Please choose your desired instrument for channel %s:", 
+        Label instr_lbl = new Label(String.format("Please choose your desired instrument for channel %s.", 
         								pianoRollGUI.getFocusedMidiChannel()));
         
         //Set this Pane's size and add nodes
