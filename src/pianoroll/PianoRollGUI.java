@@ -1635,9 +1635,11 @@ public class PianoRollGUI extends Application {
 	//     and generally leads to chaos and confusion.
 	//     At the moment ColorIntMap only contains the "special" colors as defined in ColorEnum
 	//TODO (DONE) fix bug with mute, color change, and custom pane
-	//TODO Eventually we need to either abandon ColorIntMap or come up with a better, less confusing way of
-	//     allowing users to customize color
 	//TODO UI function to lock notes? Or consider whether we need function to lock individual notes at all
+	//TODO Eventually we might need to come up with a better, less confusing way of
+	//     allowing users to customize color
+	
+	
 	//TODO there is no UI option for the end user to set note volume (other than mute/unmute)
 	//TODO have a "lock entire pianoroll from editing" or similar option
 	//TODO do we really need a WrapperNote class? Can't we just use RectangleNote for everything?

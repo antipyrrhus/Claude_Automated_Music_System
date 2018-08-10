@@ -34,7 +34,6 @@ public class CustomFunctionsPane extends BorderPane{
 	public CustomFunctionsPane(PianoRollGUI gui, Stage stage) {
 		this.pianoRollGUI = gui;
 		this.stage = stage;
-//		this.cf = new CustomFunctions(pianoRollGUI.getScorePane(), pianoRollGUI.getInstrumentInt(), this);
 		try {
 			this.reload();
 		} catch(Exception ex) {

@@ -5,7 +5,7 @@ import pianoroll.*;
 
 /**
  * This class is an API intended to make certain custom functions available to the end user for querying and modifying notes
- * on the ScorePane, without such users having to tinker with the ScorePane class directly.
+ * on the ScorePane, without such users having to tinker with the ScorePane class or other classes directly.
  */
 public class CustomFunctions extends SuperCustomFunctions{
 	
@@ -151,6 +151,16 @@ public class CustomFunctions extends SuperCustomFunctions{
 				0
 		);
 		
+		this.registerCustomFunc(
+				"setInstrumentSingleChannel(int instrument, int channel)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(2);
+					this.setInstrumentSingleChannel(params[0], params[1]);
+				},
+				0
+		);
+		
 		
 	} //end private void init()
 	
@@ -177,16 +187,34 @@ public class CustomFunctions extends SuperCustomFunctions{
 	 * @param channel
 	 */
 	public void setInstrumentAll(int instrument, int channel) {
-		this.changeInstrument(instrument, channel);
-		if (this.isValidInstrument(instrument)) {
-			for (int c = 0; c < this.getTotalNumOfCols(); ++c) {
-				for (int r = 0; r < this.getTotalNumOfRows(); ++r) {
-					if (this.readColor(c, r) != -1 && this.getStartCol(c, r) == c) {
-						this.setNoteToChannel(c, r, channel);
+		super.changeInstrument(instrument, channel);
+		if (super.isValidInstrument(instrument)) {
+			for (int c = 0; c < super.getTotalNumOfCols(); ++c) {
+				for (int r = 0; r < super.getTotalNumOfRows(); ++r) {
+					if (super.readColor(c, r) != -1 && super.getStartCol(c, r) == c) {
+						super.setNoteToChannel(c, r, channel);
 					}
 				} //end for r
 			} //end for c
 		} //end if
+	}
+	
+	/**
+	 * Sets all notes that currently belong to the specified channel to the specified instrument
+	 * @param instrument
+	 * @param channel
+	 */
+	public void setInstrumentSingleChannel(int instrument, int channel) {
+		if (super.isValidInstrument(instrument) && super.isValidMidiChannel(channel)) {
+			super.changeInstrument(instrument, channel);
+//			for (int c = 0; c < super.getTotalNumOfCols(); ++c) {
+//				for (int r = 0; r < super.getTotalNumOfRows(); ++r) {
+//					if (super.readColor(c, r) != -1 && super.getStartCol(c, r) == c && super.getNoteChannel(c, r) == channel) {
+//						super.setNoteToChannel(c, r, channel);
+//					}
+//				} //end for r
+//			} //end for c
+		}//end if
 	}
 	
 	/**

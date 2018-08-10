@@ -3,6 +3,11 @@ package pianoroll;
 import javafx.scene.paint.Color;
 import main.Note;
 
+/**
+ * A wrapper class for Note. Contains some extra information re: color, the column index, and whether the note is ON or OFF.
+ * @author PB
+ *
+ */
 public class WrapperNote extends Note {
 	private int colIdx, colorInt, origColorInt;
 	private boolean isNoteOff;	//To indicate that this is a dummy pitch indicating NOTE OFF for transcribing to midi purposes. 
@@ -10,8 +15,6 @@ public class WrapperNote extends Note {
 	public WrapperNote(int pitch) {
 		super(pitch);
 		this.isNoteOff = false;
-//		this.colorInt = ColorIntMap.colorHashMap.get(Color.GREEN);
-//		this.colorInt = ColorIntMap.rgbHashMap.get(Color.GREEN);
 		this.colorInt = ColorEnum.DEFAULT.getColorInt();
 	}
 	

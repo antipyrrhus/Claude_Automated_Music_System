@@ -711,6 +711,12 @@ public class ScorePane extends VBox {
 		return this.rectArr[this.convertTo1DCoord(row, col)];
 	}
 	
+	public int getNoteChannel(int col, int row) {
+		RectangleNote rn = getNote(col,row);
+		if (rn == null) return -1;
+		return rn.getChannel();
+	}
+	
 //	public boolean isValidInstrument(int instr) {
 //		if (instr < 0 || instr >= this.pianoRollGUI.getInstrumentArr().length) return false;
 //		return true;

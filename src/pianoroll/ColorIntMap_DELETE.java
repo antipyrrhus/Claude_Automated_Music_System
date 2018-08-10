@@ -4,6 +4,11 @@ import java.util.HashMap;
 
 import javafx.scene.paint.Color;
 
+/**
+ * UPDATE: no longer used
+ * @author PB
+ *
+ */
 public class ColorIntMap_DELETE {
 	//For use by inner class RectangleNote for translating colors to ints and vice versa
 	//Note that the last three colors (index 12 = DARKRED thru index 14 = GREY) cannot be manually

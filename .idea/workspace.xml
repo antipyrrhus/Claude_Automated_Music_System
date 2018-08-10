@@ -2,60 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="04eadbf7-28fe-4a39-beaa-7caf8a7cc7ab" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Harmonizer.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/convertmidi/MidiFile$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/convertmidi/MidiFile.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/convertmidi/ReadMidi$MidiNoteInfo.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/convertmidi/ReadMidi.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/convertmidi/ReadMidi_OLD.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Baseline.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Chord.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/ChordSequence.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Chord_NoLimit.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Emission.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Harmonizer.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Harmonizer.java_OLD" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Interval.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/KeySignature$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/KeySignature.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Note$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Note.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$1.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$2.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$3.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$4.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$5.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$KeyPressHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$LoadFileHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$RunHarmonizer.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$SaveNewFileHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI$SavetoExistingFileHandler.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/SettingGUI.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/TimeSignature.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Transition$IntervalAndOffset.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bin/main/Transition.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/random_dance_track.dat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test track.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/bin/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chopin_etude.dat" beforeDir="false" afterPath="$PROJECT_DIR$/chopin_etude.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmajor_4.24.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmajor_4.24.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/desktop.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/godfather_scratch_and_harp.dat" beforeDir="false" afterPath="$PROJECT_DIR$/godfather_scratch_and_harp.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rhapsodyinblue_4.24.dat" beforeDir="false" afterPath="$PROJECT_DIR$/rhapsodyinblue_4.24.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/convertmidi/MidiFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/convertmidi/MidiFile.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/customapi/CustomFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/customapi/CustomFunctions.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/customapi/NoteFeatures.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/customapi/NoteFeatures.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/customapi/SuperCustomFunctions.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/customapi/SuperCustomFunctions.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pianoroll/ChangeInstrumentPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/ChangeInstrumentPane.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pianoroll/InfoPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/InfoPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pianoroll/ColorIntMap_DELETE.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/ColorIntMap_DELETE.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pianoroll/CustomFunctionsPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/CustomFunctionsPane.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pianoroll/PianoRollGUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/PianoRollGUI.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pianoroll/RectangleNote.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/RectangleNote.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pianoroll/ScorePane.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/ScorePane.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/~$structions for Custom API.docx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/~WRL0003.tmp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/~tmpsave.TMP" beforeDir="false" afterPath="$PROJECT_DIR$/~tmpsave.TMP" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pianoroll/WrapperNote.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pianoroll/WrapperNote.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -91,6 +46,82 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="1059">
               <caret line="885" column="35" lean-forward="true" selection-start-line="885" selection-start-column="35" selection-end-line="885" selection-end-column="35" />
+              <folding>
+                <element signature="e#4060#4061#0" expanded="true" />
+                <element signature="e#4099#4100#0" expanded="true" />
+                <element signature="e#6122#6123#0" expanded="true" />
+                <element signature="e#6156#6157#0" expanded="true" />
+                <element signature="e#35220#35221#0" expanded="true" />
+                <element signature="e#35252#35253#0" expanded="true" />
+                <element signature="e#35497#35498#0" expanded="true" />
+                <element signature="e#35550#35551#0" expanded="true" />
+                <element signature="e#35591#35592#0" expanded="true" />
+                <element signature="e#35626#35627#0" expanded="true" />
+                <element signature="e#35663#35664#0" expanded="true" />
+                <element signature="e#35698#35699#0" expanded="true" />
+                <element signature="e#45943#45944#0" expanded="true" />
+                <element signature="e#45986#45987#0" expanded="true" />
+                <element signature="e#46032#46033#0" expanded="true" />
+                <element signature="e#46063#46064#0" expanded="true" />
+                <element signature="e#49418#49419#0" expanded="true" />
+                <element signature="e#49449#49450#0" expanded="true" />
+                <element signature="e#49655#49656#0" expanded="true" />
+                <element signature="e#49685#49686#0" expanded="true" />
+                <element signature="e#50955#50956#0" expanded="true" />
+                <element signature="e#50986#50987#0" expanded="true" />
+                <element signature="e#53046#53047#0" expanded="true" />
+                <element signature="e#53071#53072#0" expanded="true" />
+                <element signature="e#57440#57441#0" expanded="true" />
+                <element signature="e#57472#57473#0" expanded="true" />
+                <element signature="e#79427#79428#0" expanded="true" />
+                <element signature="e#79503#79504#0" expanded="true" />
+                <element signature="e#79549#79550#0" expanded="true" />
+                <element signature="e#79594#79595#0" expanded="true" />
+                <element signature="e#79638#79639#0" expanded="true" />
+                <element signature="e#79670#79671#0" expanded="true" />
+                <element signature="e#79710#79711#0" expanded="true" />
+                <element signature="e#79749#79750#0" expanded="true" />
+                <element signature="e#79796#79797#0" expanded="true" />
+                <element signature="e#79839#79840#0" expanded="true" />
+                <element signature="e#79972#79973#0" expanded="true" />
+                <element signature="e#80011#80012#0" expanded="true" />
+                <element signature="e#80049#80050#0" expanded="true" />
+                <element signature="e#80097#80098#0" expanded="true" />
+                <element signature="e#80874#80875#0" expanded="true" />
+                <element signature="e#80921#80922#0" expanded="true" />
+                <element signature="e#80955#80956#0" expanded="true" />
+                <element signature="e#81007#81008#0" expanded="true" />
+                <element signature="e#81049#81050#0" expanded="true" />
+                <element signature="e#81104#81105#0" expanded="true" />
+                <element signature="e#81489#81490#0" expanded="true" />
+                <element signature="e#81549#81550#0" expanded="true" />
+                <element signature="e#82401#82402#0" expanded="true" />
+                <element signature="e#82467#82468#0" expanded="true" />
+                <element signature="e#82523#82524#0" expanded="true" />
+                <element signature="e#82589#82590#0" expanded="true" />
+                <element signature="e#82817#82818#0" expanded="true" />
+                <element signature="e#82884#82885#0" expanded="true" />
+                <element signature="e#86320#86321#0" expanded="true" />
+                <element signature="e#86344#86345#0" expanded="true" />
+                <element signature="e#86372#86373#0" expanded="true" />
+                <element signature="e#86414#86415#0" expanded="true" />
+                <element signature="e#86834#86835#0" expanded="true" />
+                <element signature="e#86853#86854#0" expanded="true" />
+                <element signature="e#87119#87120#0" expanded="true" />
+                <element signature="e#87140#87141#0" expanded="true" />
+                <element signature="e#87190#87191#0" expanded="true" />
+                <element signature="e#87221#87222#0" expanded="true" />
+                <element signature="e#96866#96867#0" expanded="true" />
+                <element signature="e#96909#96910#0" expanded="true" />
+                <element signature="e#96959#96960#0" expanded="true" />
+                <element signature="e#96998#96999#0" expanded="true" />
+                <element signature="e#97177#97178#0" expanded="true" />
+                <element signature="e#97216#97217#0" expanded="true" />
+                <element signature="e#97251#97252#0" expanded="true" />
+                <element signature="e#97282#97283#0" expanded="true" />
+                <element signature="e#97313#97314#0" expanded="true" />
+                <element signature="e#97337#97338#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -108,7 +139,7 @@
         <entry file="file://$PROJECT_DIR$/src/customapi/CustomFunctions.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="235">
-              <caret line="421" column="49" lean-forward="true" selection-start-line="421" selection-start-column="49" selection-end-line="421" selection-end-column="49" />
+              <caret line="449" column="49" lean-forward="true" selection-start-line="449" selection-start-column="49" selection-end-line="449" selection-end-column="49" />
             </state>
           </provider>
         </entry>
@@ -135,15 +166,6 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/pianoroll/ColorIntMap.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-54">
-              <caret line="18" column="5" lean-forward="true" selection-start-line="18" selection-start-column="5" selection-end-line="18" selection-end-column="5" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/customapi/MyClassLoader.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="409">
@@ -159,7 +181,7 @@
         <entry file="file://$PROJECT_DIR$/src/pianoroll/CustomFunctionsPane.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="2121">
-              <caret line="145" column="45" lean-forward="true" selection-start-line="145" selection-start-column="45" selection-end-line="145" selection-end-column="45" />
+              <caret line="144" column="45" lean-forward="true" selection-start-line="144" selection-start-column="45" selection-end-line="144" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -180,7 +202,7 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="145" />
     <option name="y" value="86" />
     <option name="width" value="1750" />
@@ -227,7 +249,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1533846774267" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1533929375906" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -300,7 +322,7 @@
     <option name="totallyTimeSpent" value="3159000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-7" y="33" width="1550" height="838" extended-state="7" />
+    <frame x="-7" y="33" width="1550" height="838" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Designer" />
@@ -365,7 +387,7 @@
     <entry file="file://$PROJECT_DIR$/src/pianoroll/CustomFunctionsPane.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2121">
-          <caret line="145" column="45" lean-forward="true" selection-start-line="145" selection-start-column="45" selection-end-line="145" selection-end-column="45" />
+          <caret line="144" column="45" lean-forward="true" selection-start-line="144" selection-start-column="45" selection-end-line="144" selection-end-column="45" />
         </state>
       </provider>
     </entry>
@@ -400,7 +422,7 @@
     <entry file="file://$PROJECT_DIR$/src/customapi/CustomFunctions.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="235">
-          <caret line="421" column="49" lean-forward="true" selection-start-line="421" selection-start-column="49" selection-end-line="421" selection-end-column="49" />
+          <caret line="449" column="49" lean-forward="true" selection-start-line="449" selection-start-column="49" selection-end-line="449" selection-end-column="49" />
         </state>
       </provider>
     </entry>
@@ -408,6 +430,82 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1059">
           <caret line="885" column="35" lean-forward="true" selection-start-line="885" selection-start-column="35" selection-end-line="885" selection-end-column="35" />
+          <folding>
+            <element signature="e#4060#4061#0" expanded="true" />
+            <element signature="e#4099#4100#0" expanded="true" />
+            <element signature="e#6122#6123#0" expanded="true" />
+            <element signature="e#6156#6157#0" expanded="true" />
+            <element signature="e#35220#35221#0" expanded="true" />
+            <element signature="e#35252#35253#0" expanded="true" />
+            <element signature="e#35497#35498#0" expanded="true" />
+            <element signature="e#35550#35551#0" expanded="true" />
+            <element signature="e#35591#35592#0" expanded="true" />
+            <element signature="e#35626#35627#0" expanded="true" />
+            <element signature="e#35663#35664#0" expanded="true" />
+            <element signature="e#35698#35699#0" expanded="true" />
+            <element signature="e#45943#45944#0" expanded="true" />
+            <element signature="e#45986#45987#0" expanded="true" />
+            <element signature="e#46032#46033#0" expanded="true" />
+            <element signature="e#46063#46064#0" expanded="true" />
+            <element signature="e#49418#49419#0" expanded="true" />
+            <element signature="e#49449#49450#0" expanded="true" />
+            <element signature="e#49655#49656#0" expanded="true" />
+            <element signature="e#49685#49686#0" expanded="true" />
+            <element signature="e#50955#50956#0" expanded="true" />
+            <element signature="e#50986#50987#0" expanded="true" />
+            <element signature="e#53046#53047#0" expanded="true" />
+            <element signature="e#53071#53072#0" expanded="true" />
+            <element signature="e#57440#57441#0" expanded="true" />
+            <element signature="e#57472#57473#0" expanded="true" />
+            <element signature="e#79427#79428#0" expanded="true" />
+            <element signature="e#79503#79504#0" expanded="true" />
+            <element signature="e#79549#79550#0" expanded="true" />
+            <element signature="e#79594#79595#0" expanded="true" />
+            <element signature="e#79638#79639#0" expanded="true" />
+            <element signature="e#79670#79671#0" expanded="true" />
+            <element signature="e#79710#79711#0" expanded="true" />
+            <element signature="e#79749#79750#0" expanded="true" />
+            <element signature="e#79796#79797#0" expanded="true" />
+            <element signature="e#79839#79840#0" expanded="true" />
+            <element signature="e#79972#79973#0" expanded="true" />
+            <element signature="e#80011#80012#0" expanded="true" />
+            <element signature="e#80049#80050#0" expanded="true" />
+            <element signature="e#80097#80098#0" expanded="true" />
+            <element signature="e#80874#80875#0" expanded="true" />
+            <element signature="e#80921#80922#0" expanded="true" />
+            <element signature="e#80955#80956#0" expanded="true" />
+            <element signature="e#81007#81008#0" expanded="true" />
+            <element signature="e#81049#81050#0" expanded="true" />
+            <element signature="e#81104#81105#0" expanded="true" />
+            <element signature="e#81489#81490#0" expanded="true" />
+            <element signature="e#81549#81550#0" expanded="true" />
+            <element signature="e#82401#82402#0" expanded="true" />
+            <element signature="e#82467#82468#0" expanded="true" />
+            <element signature="e#82523#82524#0" expanded="true" />
+            <element signature="e#82589#82590#0" expanded="true" />
+            <element signature="e#82817#82818#0" expanded="true" />
+            <element signature="e#82884#82885#0" expanded="true" />
+            <element signature="e#86320#86321#0" expanded="true" />
+            <element signature="e#86344#86345#0" expanded="true" />
+            <element signature="e#86372#86373#0" expanded="true" />
+            <element signature="e#86414#86415#0" expanded="true" />
+            <element signature="e#86834#86835#0" expanded="true" />
+            <element signature="e#86853#86854#0" expanded="true" />
+            <element signature="e#87119#87120#0" expanded="true" />
+            <element signature="e#87140#87141#0" expanded="true" />
+            <element signature="e#87190#87191#0" expanded="true" />
+            <element signature="e#87221#87222#0" expanded="true" />
+            <element signature="e#96866#96867#0" expanded="true" />
+            <element signature="e#96909#96910#0" expanded="true" />
+            <element signature="e#96959#96960#0" expanded="true" />
+            <element signature="e#96998#96999#0" expanded="true" />
+            <element signature="e#97177#97178#0" expanded="true" />
+            <element signature="e#97216#97217#0" expanded="true" />
+            <element signature="e#97251#97252#0" expanded="true" />
+            <element signature="e#97282#97283#0" expanded="true" />
+            <element signature="e#97313#97314#0" expanded="true" />
+            <element signature="e#97337#97338#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

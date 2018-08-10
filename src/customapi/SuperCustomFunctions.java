@@ -8,7 +8,7 @@ import pianoroll.CustomFunctionsPane;
 import pianoroll.ScorePane;
 
 /**
- * An abstract Superclass for CustomFunctions class. This is only here
+ * An abstract Superclass for CustomFunctions class. This is here primarily
  * in order to enable dynamic re-loading of CustomFunctions class (so that the end user can edit the 
  * CustomFunctions class and can dynamically re-load the updated GUI without having to re-start the entire program)
  * and to be able to cast it as its SuperClass.
@@ -16,6 +16,9 @@ import pianoroll.ScorePane;
  * This Superclass is necessary because apparently with dynamic reloading and instantiation thereof,
  * you must cast it either to a superclass or to an interface. In other words, the CustomFunctions class
  * cannot be cast to itself.
+ * 
+ * This Superclass also contains some basic utility methods that are not expected to be edited by the end user
+ * who is playing around with CustomFunctions class.
  */
 public abstract class SuperCustomFunctions {
 	
@@ -23,9 +26,6 @@ public abstract class SuperCustomFunctions {
 	private final CustomFunctionsPane cfp; //GUI for the end user
 	protected HashMap<Integer, String> commandsStrHM; //Maps an index value to the name of a method in this class
 	protected HashMap<String, Runnable> commandsHM;   //Maps the name of a method in this class to the actual executable function
-//	protected static final Color[] intToColorArr = ColorIntMap.intToColorArr; //Int to color map
-//	private static final Color[] intToRGBArr = ColorIntMap.getIntToRGBArr(); //More robust RGB color map
-//	private static final HashMap<Color, Integer> rgbHashMap = ColorIntMap.getRGBHashMap();
 	
 	/**
 	 * Constructor
@@ -78,7 +78,6 @@ public abstract class SuperCustomFunctions {
 
 	protected static Color[] getIntToRGBArr() {
 		return ColorEnum.intToColorArr;
-//		return intToRGBArr;
 	}
 
 	/**********************************************************************************************************************
@@ -196,7 +195,7 @@ public abstract class SuperCustomFunctions {
 	 * Returns the color at the selected (col, row)
 	 * @param col
 	 * @param row
-	 * @return color int value (See pianoroll/ColorIntMap.java)
+	 * @return color int value. -1 means either that the input col, row are invalid or that there isn't a note there
 	 */
 	protected final int readColor(int col, int row) {
 		if (!this.isValidColRow(col, row)) return -1;
@@ -243,6 +242,16 @@ public abstract class SuperCustomFunctions {
 		}
 	}
 	
+	/**
+	 * @param col
+	 * @param row
+	 * @return the current channel to which the given note at (col,row) is assigned. -1 means there is no note there.
+	 */
+	protected final int getNoteChannel(int col, int row) {
+		if (!this.isValidColRow(col, row)) throw new RuntimeException("col, row not valid");
+		if (this.readColor(col, row) == -1) return -1;
+		return scorePane.getNoteChannel(col, row);
+	}
 	/**
 	 * Returns the total number of columns per a single measure.
 	 * @return

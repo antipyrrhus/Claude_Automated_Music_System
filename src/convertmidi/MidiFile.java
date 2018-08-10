@@ -23,13 +23,6 @@ public class MidiFile
 	//  basic figure. Note that the longest note we can
 	//  represent with this code is one tick short of a 
 	//  two semibreves (i.e., 8 crotchets)
-
-//	public static final int SEMIQUAVER = 4;  //16th note
-//	public static final int QUAVER = 8;      //8th note
-//	public static final int CROTCHET = 16;   //quarter note
-//	public static final int MINIM = 32;      //half note
-//	public static final int SEMIBREVE = 64;  //whole note
-//	public static final int MAX_VOL = 127;
 	
 	//Trying the following durations instead and see what happens
 	public static final int TRIPLET_16th = 2;
