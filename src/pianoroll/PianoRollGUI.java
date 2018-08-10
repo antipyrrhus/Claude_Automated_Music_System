@@ -162,12 +162,17 @@ public class PianoRollGUI extends Application {
 	    					}
 	    			);
 	    		}
+	    		//end for
+	    		
 	    		playedThroughOnce = true;
 //	    		disableDuringPlayback(false);
 	    		
+	    		//Playthrough ended, either because user executed stop playback command aka 'cancel' or because
+	    		//we reached the end of the piece. Either way, all sounds should be OFF.
 	    		for (int i =0; i < PianoRollGUI.this.getNumMidiInstrumentChannels(); ++i) {
 	    			mChannels[i].allSoundOff();
 	    		}
+	    		
 //	    		for (WrapperNote note : currNotesAL) {
 //					if (note == null) continue;
 //	
@@ -182,16 +187,14 @@ public class PianoRollGUI extends Application {
 //	    		}
     		} //end while
     		
-    		
-    		
-//    		disableDuringPlayback(false);
+    		//Now we can restore the boolean value to FALSE, because we're done executing the Cancel playback command.
     		cancelTask = false;
 	   }
 
 	   public void cancel()
 	   {
 		   disableDuringPlayback(false);
-		   cancelTask = true;  
+		   cancelTask = true;
 	   }
 
 //	   public boolean isCancelled() {
@@ -1215,6 +1218,7 @@ public class PianoRollGUI extends Application {
 		}
 	}
 	public void stopPlayback() {
+		if (playBackThread == null) return;  //If music is currently not playing, then no need to do anything
 		playBackThread.cancel();
 	}
 	
