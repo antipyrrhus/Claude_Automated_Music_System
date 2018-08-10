@@ -406,15 +406,15 @@ public class CustomFunctions extends SuperCustomFunctions{
 		
 		//Set channels and some arbitrary colors for each instrument
 		int drumChannel = 0;
-		int drumColor = 100;
+		int drumColor = 0;
 		int bassChannel = 1;
-		int bassColor = 400;
+		int bassColor = 0;
 		int bassTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*1); //1 octave from bottom
 		int altoChannel = 2;
-		int altoColor = 5;
+		int altoColor = 0;
 		int altoTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*4); //4 octaves from bottom
 		int padChannel = 3;
-		int padColor = 2000;
+		int padColor = 0;
 		int padTonicPitch = PianoRollGUI.MIN_PITCH + 4 + tonicKey % 12 + (12*3); //3 octaves from bottom
 		
 		this.changeInstrument(234, drumChannel);

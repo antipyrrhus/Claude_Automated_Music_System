@@ -163,18 +163,22 @@ public class PianoRollGUI extends Application {
 	    		}
 	    		playedThroughOnce = true;
 //	    		disableDuringPlayback(false);
-	    		for (WrapperNote note : currNotesAL) {
-					if (note == null) continue;
-	
-					mChannels[note.getChannel()].noteOff(note.getPitch());
-				} //end for
 	    		
-	    		//Note off all previous notes
-	    		for (WrapperNote note : prevNotesAL) {
-	    			if (note == null) continue;
-	    			
-					mChannels[note.getChannel()].noteOff(note.getPitch());
+	    		for (int i =0; i < PianoRollGUI.this.getNumMidiInstrumentChannels(); ++i) {
+	    			mChannels[i].allSoundOff();
 	    		}
+//	    		for (WrapperNote note : currNotesAL) {
+//					if (note == null) continue;
+//	
+//					mChannels[note.getChannel()].noteOff(note.getPitch());
+//				} //end for
+//	    		
+//	    		//Note off all previous notes
+//	    		for (WrapperNote note : prevNotesAL) {
+//	    			if (note == null) continue;
+//	    			
+//					mChannels[note.getChannel()].noteOff(note.getPitch());
+//	    		}
     		} //end while
     		
     		
