@@ -433,6 +433,7 @@ public abstract class SuperCustomFunctions {
 	 * @param colIndex
 	 */
 	protected final void startPlayBack(int colIndex) {
+		this.scorePane.stopPlayBack();
 		this.setActiveColumn(colIndex);
 		if (this.getCurrentActiveColumn() == colIndex) scorePane.startPlayBack();
 	}

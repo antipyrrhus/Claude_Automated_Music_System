@@ -152,10 +152,11 @@ public class PianoRollGUI extends Application {
 	    			currNotesAL = focusedScorePane.getAllNotesInColumn(i, true);
 	//    			playBack(currAL, i, prevAL);
 	    			playBack(currNotesAL, i, prevNotesAL);
-	    			autoScrollPane(sp, i);
+//	    			autoScrollPane(sp, i);
 	    			//Use runlater() because we can't control JavaFX application updates within this thread otherwise.
 	    			Platform.runLater(
 	    					() -> {
+	    						autoScrollPane(sp, PianoRollGUI.this.getActiveColumn());
 	    						PianoRollGUI.this.advanceCol(true);
 	    						updateInfoPane();
 	    					}
@@ -1640,6 +1641,10 @@ public class PianoRollGUI extends Application {
 	//     and generally leads to chaos and confusion.
 	//     At the moment ColorIntMap only contains the "special" colors as defined in ColorEnum
 	//TODO (DONE) fix bug with mute, color change, and custom pane
+	//TODO (DONE) fix bug with play/stop button disabling not working sometimes when using custom functions
+	//TODO (DONE) fix bug re: previous playback must stop first before another playback method can be executed
+	//     thru the custom pane, otherwise results in multiple playback threads
+	//TODO (DONE) Fix the auto-scroll sometimes not working when opening / closing custom functions pane
 	//TODO UI function to lock notes? Or consider whether we need function to lock individual notes at all
 	//TODO Eventually we might need to come up with a better, less confusing way of
 	//     allowing users to customize color
