@@ -72,6 +72,17 @@ public class CustomFunctions extends SuperCustomFunctions{
 		);
 		
 		this.registerCustomFunc(
+				"circleOfXth(int startRow, int color, int x)",
+				index++,
+				() -> {
+					int[] params = this.getAndValidateIntParamArr(3);
+					this.circleOfXth(params[0], params[1], params[2]);
+				},
+				0
+		);
+		
+		
+		this.registerCustomFunc(
 				"doubleCircleOfXth(int startRowA, int startRowB, int colorA, int colorB, int xA, int xB)",
 				index++,
 				() -> {
@@ -187,6 +198,7 @@ public class CustomFunctions extends SuperCustomFunctions{
 	 * @param channel
 	 */
 	public void setInstrumentAll(int instrument, int channel) {
+		super.stopPlayBack();
 		super.changeInstrument(instrument, channel);
 		if (super.isValidInstrument(instrument)) {
 			for (int c = 0; c < super.getTotalNumOfCols(); ++c) {
@@ -197,6 +209,7 @@ public class CustomFunctions extends SuperCustomFunctions{
 				} //end for r
 			} //end for c
 		} //end if
+		super.startPlayBack(super.getCurrentActiveColumn());
 	}
 	
 	/**
@@ -205,6 +218,7 @@ public class CustomFunctions extends SuperCustomFunctions{
 	 * @param channel
 	 */
 	public void setInstrumentSingleChannel(int instrument, int channel) {
+		super.stopPlayBack();
 		if (super.isValidInstrument(instrument) && super.isValidMidiChannel(channel)) {
 			super.changeInstrument(instrument, channel);
 //			for (int c = 0; c < super.getTotalNumOfCols(); ++c) {
@@ -215,6 +229,7 @@ public class CustomFunctions extends SuperCustomFunctions{
 //				} //end for r
 //			} //end for c
 		}//end if
+		super.startPlayBack(super.getCurrentActiveColumn());
 	}
 	
 	/**
