@@ -218,7 +218,6 @@ public class CustomFunctions extends SuperCustomFunctions{
 	 * @param channel
 	 */
 	public void setInstrumentSingleChannel(int instrument, int channel) {
-		super.stopPlayBack();
 		if (super.isValidInstrument(instrument) && super.isValidMidiChannel(channel)) {
 			super.changeInstrument(instrument, channel);
 //			for (int c = 0; c < super.getTotalNumOfCols(); ++c) {
@@ -229,7 +228,6 @@ public class CustomFunctions extends SuperCustomFunctions{
 //				} //end for r
 //			} //end for c
 		}//end if
-		super.startPlayBack(super.getCurrentActiveColumn());
 	}
 	
 	/**

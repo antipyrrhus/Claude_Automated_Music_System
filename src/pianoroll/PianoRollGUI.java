@@ -183,13 +183,14 @@ public class PianoRollGUI extends Application {
     		
     		
     		
-    		disableDuringPlayback(false);
+//    		disableDuringPlayback(false);
     		cancelTask = false;
 	   }
 
 	   public void cancel()
 	   {
-	      cancelTask = true;  
+		   disableDuringPlayback(false);
+		   cancelTask = true;  
 	   }
 
 //	   public boolean isCancelled() {

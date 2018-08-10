@@ -23,6 +23,7 @@
     <session id="-1967128192">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
+          <entry key="project.closed" value="1" />
           <entry key="project.open.time.9" value="1" />
           <entry key="project.opened" value="1" />
         </counts>
@@ -44,8 +45,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/pianoroll/PianoRollGUI.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1059">
-              <caret line="885" column="35" lean-forward="true" selection-start-line="885" selection-start-column="35" selection-end-line="885" selection-end-column="35" />
+            <state relative-caret-position="226">
+              <caret line="836" column="4" lean-forward="true" selection-start-line="836" selection-start-column="4" selection-end-line="836" selection-end-column="4" />
               <folding>
                 <element signature="e#4060#4061#0" expanded="true" />
                 <element signature="e#4099#4100#0" expanded="true" />
@@ -249,7 +250,7 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1533929375906" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1533929385796" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -314,16 +315,15 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1533839497940</updated>
-      <workItem from="1533839505722" duration="3159000" />
+      <workItem from="1533839505722" duration="3762000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3159000" />
+    <option name="totallyTimeSpent" value="3762000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-7" y="33" width="1550" height="838" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Designer" />
       <window_info id="Image Layers" />
@@ -342,7 +342,7 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.30028328" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.39943343" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39943343" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
@@ -428,8 +428,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/pianoroll/PianoRollGUI.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1059">
-          <caret line="885" column="35" lean-forward="true" selection-start-line="885" selection-start-column="35" selection-end-line="885" selection-end-column="35" />
+        <state relative-caret-position="226">
+          <caret line="836" column="4" lean-forward="true" selection-start-line="836" selection-start-column="4" selection-end-line="836" selection-end-column="4" />
           <folding>
             <element signature="e#4060#4061#0" expanded="true" />
             <element signature="e#4099#4100#0" expanded="true" />
