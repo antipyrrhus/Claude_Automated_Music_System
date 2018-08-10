@@ -1340,9 +1340,9 @@ public class PianoRollGUI extends Application {
 				if (k.getCode().getName().startsWith("Numpad")) return; //numpad digits will be disabled from changing note color
 				
 				//UPDATE: only allow user to reset note to default color, not any other colors
-				if (Integer.parseInt(k.getCode().getName()) == ColorEnum.DEFAULT.getColorInt()) {
+				if (Integer.parseInt(k.getCode().getName()) == ColorEnum.LOCKED.getColorInt()) {
 					try {
-						focusedScorePane.colorSelectedNotes(ColorEnum.DEFAULT.getColorInt());
+						focusedScorePane.colorSelectedNotes(ColorEnum.LOCKED.getColorInt());
 					} catch (NumberFormatException nfe) {
 						nfe.printStackTrace();
 					}
@@ -1625,32 +1625,27 @@ public class PianoRollGUI extends Application {
 	//TODO (DONE) update infopane re: above fixed drum channel
 	//TODO (DONE) Tutorial videos
 	//TODO (DONE) make up a function that composes a random dance track with multiple instruments
-	
 	//TODO (DONE) create a ColorEnum class for binding certain "special" colors for notes, such as GRAY for mute
+	//TODO (DONE) color scheme between CustomFunctions and UI interface commands is messed up
+	//     (e.g. unmute doesn't change colors back, default colors like mute=gray doesn't always work etc.
+	//     Consider doing away with custom colors altogether?	
 	
-	//TODO trying to phase out ColorIntMap for setting custom colors programmatically. It conflicts too much with special colors
+	
+	//TODO (DONE) trying to phase out ColorIntMap for setting custom colors programmatically. It conflicts too much with special colors
 	//     and generally leads to chaos and confusion.
 	//     At the moment ColorIntMap only contains the "special" colors as defined in ColorEnum
-	//     Eventually we need to either abandon ColorIntMap or come up with a better, less confusing way of
+	//TODO (DONE) fix bug with mute, color change, and custom pane
+	//TODO Eventually we need to either abandon ColorIntMap or come up with a better, less confusing way of
 	//     allowing users to customize color
-	
+	//TODO UI function to lock notes? Or consider whether we need function to lock individual notes at all
 	//TODO there is no UI option for the end user to set note volume (other than mute/unmute)
-	
-	//TODO color scheme between CustomFunctions and UI interface commands is messed up
-	//     (e.g. unmute doesn't change colors back, default colors like mute=gray doesn't always work etc.
-	//     Consider doing away with custom colors altogether?
 	//TODO have a "lock entire pianoroll from editing" or similar option
 	//TODO do we really need a WrapperNote class? Can't we just use RectangleNote for everything?
-	
-	//TODO consider re-doing color RGB to Int map, to account for all possible colors 255 x 255 x 255
 	//TODO alert pane for when end users make a mistake, esp while using custom functions pane
-	//TODO consider editing Note / RectangleNote / WrapperNote classes for less redundancy.
-	//     (perhaps have WrapperNote be a subclass, and have RectangleNote contain a Note attribute?)
 	//TODO consider using code re: command line build of custom functions, another thread
 	//     https://stackoverflow.com/questions/8496494/running-command-line-in-java
 	//     https://stackoverflow.com/questions/16137713/how-do-i-run-a-java-program-from-the-command-line-on-windows
 	//TODO debug export to midi problem 
-	//TODO ex. Show how to change color of all notes for which stencilbit index 3 == 1, turn it green
 	//TODO functionality to save to defaultcustomfunctions and load from it in event of a catastrophe
 	//TODO expeirment with converting individual packages to jars except for custom functions class
 	
@@ -2263,7 +2258,7 @@ public class PianoRollGUI extends Application {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		ColorIntMap.getIntToRGBArr();  //initialize the color map just in case
+//		ColorIntMap.getIntToRGBArr();  //initialize the color map just in case
 		Application.launch(args);
 	}
 }

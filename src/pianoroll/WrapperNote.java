@@ -40,7 +40,9 @@ public class WrapperNote extends Note {
 	
 	public WrapperNote(int pitch, int colIdx, Color color, Color origColor, int duration) {
 //		this(pitch, colIdx, ColorIntMap.colorHashMap.get(color), ColorIntMap.colorHashMap.get(origColor), duration);
-		this(pitch, colIdx, ColorIntMap.rgbHashMap.get(color), ColorIntMap.rgbHashMap.get(origColor), duration);
+		
+//		this(pitch, colIdx, ColorIntMap.rgbHashMap.get(color), ColorIntMap.rgbHashMap.get(origColor), duration);
+		this(pitch, colIdx, ColorEnum.getColorInt(color), ColorEnum.getColorInt(origColor), duration);
 		
 	}
 	

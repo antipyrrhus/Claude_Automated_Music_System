@@ -42,7 +42,18 @@ public enum ColorEnum {
 	}
 	
 	public int getColorInt() {
-		if (colorHashMap.get(this.c) != colorHashMap.get(intToColorArr[colorHashMap.get(this.c)])) throw new RuntimeException();
+//		if (colorHashMap.get(this.c) != colorHashMap.get(intToColorArr[colorHashMap.get(this.c)])) throw new RuntimeException();
 		return colorHashMap.get(this.c);
+	}
+	
+	public static Color getColor(int c) {
+		if (c < 0 || c >= intToColorArr.length) throw new RuntimeException("color index out of range");
+		return intToColorArr[c];
+	}
+	
+	public static int getColorInt(Color c) {
+		Integer ret = colorHashMap.get(c);
+		if (ret == null) throw new RuntimeException("No index no. is associated with this color");
+		return ret;
 	}
 }

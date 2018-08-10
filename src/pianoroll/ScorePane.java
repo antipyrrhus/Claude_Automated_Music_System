@@ -771,15 +771,20 @@ public class ScorePane extends VBox {
 	public int getColor(int col, int row) {
 		RectangleNote rn = this.rectArr[this.convertTo1DCoord(row, col)];
 		if (rn==null) return -1; //-1 indicates there is no note here
-		if (ColorIntMap.rgbHashMap.get(rn.color)==null) throw new RuntimeException(""
-				+ "Unexpected error: The current note's color does not have a corresponding integer value mapped to it.");
-		return ColorIntMap.rgbHashMap.get(rn.color);
+//		if (ColorIntMap.rgbHashMap.get(rn.color)==null) throw new RuntimeException(""
+//				+ "Unexpected error: The current note's color does not have a corresponding integer value mapped to it.");
+//		return ColorIntMap.rgbHashMap.get(rn.color);
+		return ColorEnum.getColorInt(rn.color);
 	}
 	
 	public boolean setColor(int col, int row, int colorInt) {
 		if (colorInt == -1) { //this means delete the note
 			this.deleteRect(this.convertTo1DCoord(row, col), rectArr, pane);
 			return true;
+		}
+		
+		if (colorInt < -1 || colorInt >= ColorEnum.numOfSpecialColors) {
+			return false;
 		}
 		
 		int rectIndex = this.convertTo1DCoord(row, col);
@@ -794,7 +799,7 @@ public class ScorePane extends VBox {
 		}
 		rn.setColor(colorInt);
 		
-		if (ColorIntMap.rgbHashMap.get(rn.color) == colorInt) return true;
+//		if (ColorIntMap.rgbHashMap.get(rn.color) == colorInt) return true;
 		return false;
 	}
 	

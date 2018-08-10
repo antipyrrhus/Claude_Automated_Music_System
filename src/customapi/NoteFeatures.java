@@ -135,17 +135,17 @@ public class NoteFeatures {
 	public void setColor(Color color) {
 		this.color = color;
 	}
-	public void setColor(int colorInt) {
-		if (colorInt < 0 || colorInt >= ColorIntMap.getIntToRGBArr().length) throw new RuntimeException("Color int param out of range");
-		this.color = ColorIntMap.getIntToRGBArr()[colorInt];
-	}
-	public int getColorInt() {
-		return ColorIntMap.getRGBHashMap().get(color);
-	}
+//	public void setColor(int colorInt) {
+//		if (colorInt < 0 || colorInt >= ColorIntMap.getIntToRGBArr().length) throw new RuntimeException("Color int param out of range");
+//		this.color = ColorIntMap.getIntToRGBArr()[colorInt];
+//	}
+//	public int getColorInt() {
+//		return ColorIntMap.getRGBHashMap().get(color);
+//	}
 	
 	@Override
 	public String toString() {
 				return String.format("(%s,%s,%s,%s,%s,%s,%s,%s)", this.noteIsNull, colStartIdx, rowIdx, duration, pitchVal,
-							  this.midiChannel, this.volume, ColorIntMap.getRGBHashMap().get(color), this.stencilBits);
+							  this.midiChannel, this.volume, ColorEnum.getColorInt(color), this.stencilBits);
 	}
 }

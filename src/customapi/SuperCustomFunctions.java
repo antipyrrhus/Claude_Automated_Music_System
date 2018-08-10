@@ -2,7 +2,8 @@ package customapi;
 import java.util.BitSet;
 import java.util.HashMap;
 import javafx.scene.paint.Color;
-import pianoroll.ColorIntMap;
+import pianoroll.ColorEnum;
+//import pianoroll.ColorIntMap;
 import pianoroll.CustomFunctionsPane;
 import pianoroll.ScorePane;
 
@@ -23,8 +24,8 @@ public abstract class SuperCustomFunctions {
 	protected HashMap<Integer, String> commandsStrHM; //Maps an index value to the name of a method in this class
 	protected HashMap<String, Runnable> commandsHM;   //Maps the name of a method in this class to the actual executable function
 //	protected static final Color[] intToColorArr = ColorIntMap.intToColorArr; //Int to color map
-	private static final Color[] intToRGBArr = ColorIntMap.getIntToRGBArr(); //More robust RGB color map
-	private static final HashMap<Color, Integer> rgbHashMap = ColorIntMap.getRGBHashMap();
+//	private static final Color[] intToRGBArr = ColorIntMap.getIntToRGBArr(); //More robust RGB color map
+//	private static final HashMap<Color, Integer> rgbHashMap = ColorIntMap.getRGBHashMap();
 	
 	/**
 	 * Constructor
@@ -76,7 +77,8 @@ public abstract class SuperCustomFunctions {
 	}
 
 	protected static Color[] getIntToRGBArr() {
-		return intToRGBArr;
+		return ColorEnum.intToColorArr;
+//		return intToRGBArr;
 	}
 
 	/**********************************************************************************************************************
@@ -162,7 +164,7 @@ public abstract class SuperCustomFunctions {
 	 * @param c
 	 */
 	protected final boolean isValidColor(int c) {
-		if (c < -1 || c >= intToRGBArr.length) return false;
+		if (c < -1 || c >= ColorEnum.numOfSpecialColors) return false;
 		return true;
 	}
 	
@@ -212,7 +214,7 @@ public abstract class SuperCustomFunctions {
 	protected final boolean setColor(int col, int row, int c) {
 		if (!this.isValidColor(c) || !this.isValidColRow(col, row)) return false;
 		if (c == -1) return scorePane.setColor(col, row, c);
-		else return scorePane.setColor(col,  row, intToRGBArr[c]);
+		else return scorePane.setColor(col,  row, getIntToRGBArr()[c]);
 	}
 	
 	/**
@@ -393,13 +395,17 @@ public abstract class SuperCustomFunctions {
 	 * @return
 	 */
 	protected final int convertColorToInt(Color color) {
-		Integer colorInt = rgbHashMap.get(color);
-		if (colorInt == null) return -1;
+		Integer colorInt = ColorEnum.getColorInt(color);
+		//Remove this block of code since if colorInt == null, the above method would throw exception, so
+		//the below block is dead code
+//		if (colorInt == null) {
+//			return -1;
+//		}
 		return colorInt;
 	}
 	
 	protected final int getTotalNumOfColors() {
-		return intToRGBArr.length;
+		return getIntToRGBArr().length;
 	}
 	
 	/**
